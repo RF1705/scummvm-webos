@@ -13,6 +13,10 @@ produces an installable ARM `.ipk`.
 - package ID: `org.scummvm.scummvm`
 - ScummVM: `v2026.3.0`
 
+The small patch in `patches/` only tells ScummVM's cross-compile configure
+step that the supported LG ARM target is little-endian. It does not add a
+custom ScummVM backend.
+
 The initial **lite** profile contains the engines most useful for classic
 point-and-click adventures:
 

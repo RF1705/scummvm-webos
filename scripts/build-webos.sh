@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="${SCUMMVM_SOURCE_DIR:-$repo_root/upstream}"
 build_dir="${BUILD_DIR:-$repo_root/build}"
+cross_patch="$repo_root/patches/0001-configure-webos-arm-little-endian.patch"
 
 if [[ ! -x "$source_dir/configure" ]]; then
   echo "ScummVM source not found at $source_dir" >&2
@@ -23,6 +24,10 @@ case "$("$CC" -dumpmachine)" in
     exit 1
     ;;
 esac
+
+if ! grep -q "All supported 32-bit LG webOS TV targets" "$source_dir/configure"; then
+  patch --directory="$source_dir" --strip=1 < "$cross_patch"
+fi
 
 engines=(
   agi

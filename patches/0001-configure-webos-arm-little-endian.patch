@@ -1,0 +1,17 @@
+diff --git a/configure b/configure
+index 2d7d01e..36e29c8 100755
+--- a/configure
++++ b/configure
+@@ -2800,6 +2800,12 @@ fi
+ #
+ # Check for endianness
+ #
++# The generic cross-compile probe cannot always inspect binaries produced by
++# the webOSbrew toolchain. All supported 32-bit LG webOS TV targets are ARM
++# little-endian.
++if test "$_host" = arm-webos-linux-gnueabi; then
++	_endian=little
++fi
+ echo_n "Checking endianness... "
+ cat > tmp_endianness_check.cpp << EOF
+ #ifndef __GNUC__
