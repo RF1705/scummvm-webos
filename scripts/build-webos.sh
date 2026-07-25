@@ -55,6 +55,22 @@ mkdir -p "$build_dir"
 cd "$build_dir"
 
 export PKG_CONFIG_ALLOW_CROSS=1
+export PKG_CONFIG_SYSROOT_DIR="$STAGING_DIR"
+mapfile -t pkgconfig_dirs < <(find "$STAGING_DIR" -type d -name pkgconfig -print)
+if (( ${#pkgconfig_dirs[@]} == 0 )); then
+  echo "No target pkg-config directories found below $STAGING_DIR" >&2
+  exit 1
+fi
+export PKG_CONFIG_LIBDIR="$(IFS=:; echo "${pkgconfig_dirs[*]}")"
+unset PKG_CONFIG_PATH
+
+if ! pkg-config --exists sdl2; then
+  echo "SDL2 metadata was not found in the webOS NDK." >&2
+  echo "PKG_CONFIG_LIBDIR=$PKG_CONFIG_LIBDIR" >&2
+  exit 1
+fi
+
+echo "Using SDL2 $(pkg-config --modversion sdl2)"
 export CXXFLAGS="${CXXFLAGS:-} -Os -ffunction-sections -fdata-sections -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
 export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,\$ORIGIN/lib"
 
