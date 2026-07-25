@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source_dir="${SCUMMVM_SOURCE_DIR:-$repo_root/upstream}"
+build_dir="${BUILD_DIR:-$repo_root/build}"
+
+if [[ ! -x "$source_dir/configure" ]]; then
+  echo "ScummVM source not found at $source_dir" >&2
+  exit 1
+fi
+
+if [[ -z "${CC:-}" || -z "${CXX:-}" || -z "${STAGING_DIR:-}" ]]; then
+  echo "Source the webOS NDK environment-setup file before building." >&2
+  exit 1
+fi
+
+case "$("$CC" -dumpmachine)" in
+  arm-webos-linux-gnueabi | arm-buildroot-linux-gnueabi)
+    ;;
+  *)
+    echo "Unexpected compiler target: $("$CC" -dumpmachine)" >&2
+    exit 1
+    ;;
+esac
+
+engines=(
+  agi
+  agos
+  drascula
+  gob
+  kyra
+  lure
+  queen
+  saga
+  sci
+  scumm
+  sky
+  sword1
+  sword2
+  teenagent
+  tinsel
+  touche
+)
+
+engine_list="$(IFS=,; echo "${engines[*]}")"
+
+rm -rf "$build_dir"
+mkdir -p "$build_dir"
+cd "$build_dir"
+
+export PKG_CONFIG_ALLOW_CROSS=1
+export CXXFLAGS="${CXXFLAGS:-} -Os -ffunction-sections -fdata-sections -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
+export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,\$ORIGIN/lib"
+
+"$source_dir/configure" \
+  --host=arm-webos-linux-gnueabi \
+  --backend=sdl \
+  --enable-release \
+  --disable-debug \
+  --disable-Werror \
+  --disable-all-engines \
+  --enable-engine="$engine_list" \
+  --disable-detection-full \
+  --enable-ext-neon \
+  --enable-vkeybd \
+  --disable-taskbar \
+  --disable-cloud \
+  --disable-eventrecorder \
+  --disable-updates \
+  --disable-tts \
+  --disable-system-dialogs \
+  --disable-mt32emu \
+  --disable-alsa \
+  --disable-seq-midi \
+  --disable-timidity \
+  --disable-fluidsynth \
+  --disable-fluidlite \
+  --disable-sonivox \
+  --disable-libcurl \
+  --disable-sdlnet \
+  --disable-enet \
+  --disable-discord \
+  --disable-ogg \
+  --disable-vorbis \
+  --disable-tremor \
+  --disable-mad \
+  --disable-flac \
+  --disable-mpeg2 \
+  --disable-theoradec \
+  --disable-vpx \
+  --disable-faad \
+  --disable-freetype2 \
+  --disable-jpeg \
+  --disable-png \
+  --disable-gif \
+  --opengl-mode=none \
+  --disable-opengl-game \
+  --disable-tinygl
+
+make -j"${JOBS:-$(getconf _NPROCESSORS_ONLN)}" scummvm
+
+"${STRIP:-strip}" "$build_dir/scummvm"
+file "$build_dir/scummvm"
+"${READELF:-readelf}" -d "$build_dir/scummvm" | grep NEEDED || true
+du -h "$build_dir/scummvm"

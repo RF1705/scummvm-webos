@@ -1,0 +1,122 @@
+name: Build webOS IPK
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      scummvm_ref:
+        description: Official ScummVM tag or commit
+        required: true
+        default: v2026.3.0
+
+permissions:
+  contents: write
+
+concurrency:
+  group: webos-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SCUMMVM_REF: ${{ inputs.scummvm_ref || 'v2026.3.0' }}
+  SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
+  SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
+
+jobs:
+  build:
+    name: ARMv7 lite package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out packaging repository
+        uses: actions/checkout@v4
+
+      - name: Check out ScummVM
+        uses: actions/checkout@v4
+        with:
+          repository: scummvm/scummvm
+          ref: ${{ env.SCUMMVM_REF }}
+          path: upstream
+          fetch-depth: 1
+
+      - name: Validate repository scripts
+        run: |
+          bash -n scripts/build-webos.sh
+          bash -n scripts/package-webos.sh
+
+      - name: Download webOS build tools
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/downloads"
+          gh release download \
+            --repo webosbrew/ares-cli-rs \
+            --pattern 'ares-package_*_amd64.deb' \
+            --dir "$RUNNER_TEMP/downloads"
+          gh release download \
+            --repo openlgtv/buildroot-nc4 \
+            --pattern "$SDK_ARCHIVE" \
+            --dir "$RUNNER_TEMP/downloads"
+          curl --fail --location --retry 3 \
+            "$SDL2_ARCHIVE_URL" \
+            --output "$RUNNER_TEMP/downloads/sdl2.tar.gz"
+
+      - name: Install webOS build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
+          mkdir -p "$RUNNER_TEMP/webos-ndk" "$RUNNER_TEMP/sdl2"
+          tar -xzf "$RUNNER_TEMP/downloads/$SDK_ARCHIVE" \
+            -C "$RUNNER_TEMP/webos-ndk" \
+            --strip-components=1
+          "$RUNNER_TEMP/webos-ndk/relocate-sdk.sh"
+          tar -xzf "$RUNNER_TEMP/downloads/sdl2.tar.gz" \
+            -C "$RUNNER_TEMP/sdl2"
+
+      - name: Build ScummVM
+        shell: bash
+        run: |
+          source "$RUNNER_TEMP/webos-ndk/environment-setup"
+          SCUMMVM_SOURCE_DIR="$GITHUB_WORKSPACE/upstream" \
+            BUILD_DIR="$GITHUB_WORKSPACE/build" \
+            bash scripts/build-webos.sh
+
+      - name: Package IPK
+        shell: bash
+        run: |
+          source "$RUNNER_TEMP/webos-ndk/environment-setup"
+          SCUMMVM_SOURCE_DIR="$GITHUB_WORKSPACE/upstream" \
+            BUILD_DIR="$GITHUB_WORKSPACE/build" \
+            DIST_DIR="$GITHUB_WORKSPACE/dist" \
+            SDL2_BUNDLE_DIR="$RUNNER_TEMP/sdl2" \
+            bash scripts/package-webos.sh
+
+      - name: Inspect package
+        run: |
+          ls -lh dist/*.ipk dist/*.sha256
+          file dist/package/scummvm dist/package/lib/*
+          cat dist/*.sha256
+
+      - name: Upload CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scummvm-webos-${{ github.sha }}-arm
+          path: |
+            dist/*.ipk
+            dist/*.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish tagged release assets
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" ||
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/*.ipk dist/*.sha256 --clobber

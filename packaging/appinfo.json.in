@@ -1,0 +1,14 @@
+{
+  "id": "org.scummvm.scummvm",
+  "version": "@VERSION@",
+  "vendor": "ScummVM Team / RF1705",
+  "title": "ScummVM",
+  "icon": "icon160.png",
+  "main": "scummvm",
+  "type": "native",
+  "appDescription": "Classic adventure game engine",
+  "iconColor": "#1b2138",
+  "noSplashOnLaunch": true,
+  "useAllMouseButtons": true,
+  "useAllKeyboardKeys": true
+}
