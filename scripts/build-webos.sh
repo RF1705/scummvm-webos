@@ -71,6 +71,8 @@ if ! pkg-config --exists sdl2; then
 fi
 
 echo "Using SDL2 $(pkg-config --modversion sdl2)"
+export PATH="$repo_root/tools:$PATH"
+export SDL_CONFIG=sdl2-config-webos
 export CXXFLAGS="${CXXFLAGS:-} -Os -ffunction-sections -fdata-sections -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
 export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,\$ORIGIN/lib"
 

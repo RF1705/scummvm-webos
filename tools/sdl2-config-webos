@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+  --version)
+    exec pkg-config --modversion sdl2
+    ;;
+  --cflags)
+    exec pkg-config --cflags sdl2
+    ;;
+  --libs)
+    exec pkg-config --libs sdl2
+    ;;
+  --static-libs)
+    exec pkg-config --static --libs sdl2
+    ;;
+  *)
+    echo "Unsupported sdl2-config option: ${1:-}" >&2
+    exit 1
+    ;;
+esac
