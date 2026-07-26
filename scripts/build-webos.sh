@@ -129,7 +129,8 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
-if ! grep -Fq "SCUMM [v7 & v8 games]" "$build_dir/configure-summary.txt"; then
+if ! grep -Eq "SCUMM .*\\[v7 & v8 games\\]" \
+  "$build_dir/configure-summary.txt"; then
   echo "SCUMM v7/v8 support was not enabled." >&2
   exit 1
 fi
