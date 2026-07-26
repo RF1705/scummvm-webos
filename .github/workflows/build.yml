@@ -48,7 +48,6 @@ jobs:
         run: |
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
-          sh -n packaging/launch-scummvm.sh
 
       - name: Download webOS build tools
         env:

@@ -32,9 +32,10 @@ rm -rf "$dist_dir"
 mkdir -p "$package_dir/lib"
 
 install -m 0755 "$build_dir/scummvm" "$package_dir/scummvm.bin"
-install -m 0755 \
-  "$repo_root/packaging/launch-scummvm.sh" \
-  "$package_dir/scummvm"
+"${CC:-arm-webos-linux-gnueabi-gcc}" \
+  -Os -s \
+  "$repo_root/packaging/launch-scummvm.c" \
+  -o "$package_dir/scummvm"
 sed "s/@VERSION@/$version/g" \
   "$repo_root/packaging/appinfo.json.in" > "$package_dir/appinfo.json"
 install -m 0644 \
