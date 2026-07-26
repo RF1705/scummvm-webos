@@ -48,6 +48,7 @@ jobs:
         run: |
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
+          sh -n packaging/launch-scummvm.sh
 
       - name: Download webOS build tools
         env:
@@ -99,7 +100,7 @@ jobs:
       - name: Inspect package
         run: |
           ls -lh dist/*.ipk dist/*.sha256
-          file dist/package/scummvm dist/package/lib/*
+          file dist/package/scummvm dist/package/scummvm.bin dist/package/lib/*
           cat dist/*.sha256
 
       - name: Upload CI artifact
