@@ -144,27 +144,32 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
-required_engine_defines=(
-  ENABLE_SCUMM_7_8
-  ENABLE_MOHAWK
-  ENABLE_RIVEN
-  ENABLE_MYST
-  ENABLE_GROOVIE
-  ENABLE_TOON
-  ENABLE_TONY
-  ENABLE_TUCKER
-  ENABLE_DREAMWEB
-  ENABLE_HUGO
-  ENABLE_PARALLACTION
-  ENABLE_MADE
-  ENABLE_MADS
-  ENABLE_CINE
-  ENABLE_CRUISE
+enabled_engine_summary="$build_dir/enabled-engines.txt"
+awk '
+  /^Engines \(builtin\):$/ { enabled = 1; next }
+  /^Engines Skipped:$/ { enabled = 0 }
+  enabled
+' "$build_dir/configure-summary.txt" > "$enabled_engine_summary"
+
+required_engine_descriptions=(
+  "SCUMM [v0-v6 games] [v7 & v8 games]"
+  "Mohawk [Living Books] [Myst] [Riven: The Sequel to Myst]"
+  "Groovie [7th Guest]"
+  "Cinematique evo 1"
+  "Cinematique evo 2"
+  "Dreamweb"
+  "Hugo Trilogy"
+  "MADE"
+  "MADS [all games]"
+  "Parallaction"
+  "Tony Tough and the Night of Roasted Moths"
+  "Toonstruck"
+  "Bud Tucker in Double Trouble"
 )
 
-for engine_define in "${required_engine_defines[@]}"; do
-  if ! grep -Fq "#define $engine_define" "$build_dir/config.h"; then
-    echo "Required engine feature was not enabled: $engine_define" >&2
+for engine_description in "${required_engine_descriptions[@]}"; do
+  if ! grep -Fq "$engine_description" "$enabled_engine_summary"; then
+    echo "Required engine was not enabled: $engine_description" >&2
     exit 1
   fi
 done
