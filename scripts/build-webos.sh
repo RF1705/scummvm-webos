@@ -37,10 +37,22 @@ fi
 engines=(
   agi
   agos
+  cine
+  cruise
   drascula
+  dreamweb
   gob
+  groovie
+  hugo
   kyra
   lure
+  made
+  mads
+  madsv2
+  mohawk
+  myst
+  riven
+  parallaction
   queen
   saga
   sci
@@ -51,7 +63,10 @@ engines=(
   sword2
   teenagent
   tinsel
+  tony
+  toon
   touche
+  tucker
 )
 
 engine_list="$(IFS=,; echo "${engines[*]}")"
@@ -129,11 +144,30 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
-if ! grep -Eq "SCUMM .*\\[v7 & v8 games\\]" \
-  "$build_dir/configure-summary.txt"; then
-  echo "SCUMM v7/v8 support was not enabled." >&2
-  exit 1
-fi
+required_engine_defines=(
+  ENABLE_SCUMM_7_8
+  ENABLE_MOHAWK
+  ENABLE_RIVEN
+  ENABLE_MYST
+  ENABLE_GROOVIE
+  ENABLE_TOON
+  ENABLE_TONY
+  ENABLE_TUCKER
+  ENABLE_DREAMWEB
+  ENABLE_HUGO
+  ENABLE_PARALLACTION
+  ENABLE_MADE
+  ENABLE_MADS
+  ENABLE_CINE
+  ENABLE_CRUISE
+)
+
+for engine_define in "${required_engine_defines[@]}"; do
+  if ! grep -Fq "#define $engine_define" "$build_dir/config.h"; then
+    echo "Required engine feature was not enabled: $engine_define" >&2
+    exit 1
+  fi
+done
 
 make -j"${JOBS:-$(getconf _NPROCESSORS_ONLN)}" scummvm
 

@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
   pull_request:
   workflow_dispatch:
     inputs:
@@ -15,7 +13,7 @@ on:
         default: v2026.3.0
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: webos-${{ github.workflow }}-${{ github.ref }}
@@ -26,7 +24,8 @@ env:
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
   FREETYPE_VERSION: 2.13.3
-  WEBOS_PACKAGE_VERSION: 2026.3.1
+  WEBOS_PACKAGE_VERSION: 2026.3.0
+  WEBOS_BUILD_SUFFIX: beta1
 
 jobs:
   build:
@@ -160,19 +159,10 @@ jobs:
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:
-          name: scummvm-webos-${{ github.sha }}-arm
+          name: scummvm-webos-v${{ env.WEBOS_PACKAGE_VERSION }}-${{ env.WEBOS_BUILD_SUFFIX }}-${{ github.sha }}-arm
           path: |
             dist/*.ipk
             dist/*.sha256
             helpers/rclone-smb
           if-no-files-found: error
           retention-days: 14
-
-      - name: Publish tagged release assets
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release view "$GITHUB_REF_NAME" ||
-            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
-          gh release upload "$GITHUB_REF_NAME" dist/*.ipk dist/*.sha256 --clobber

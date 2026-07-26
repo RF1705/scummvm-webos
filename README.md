@@ -11,7 +11,7 @@ produces an installable ARM `.ipk`.
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- webOS package: `2026.3.1`
+- webOS build: `v2026.3.0-beta1`
 - ScummVM core: `v2026.3.0`
 
 The small patch in `patches/` only tells ScummVM's cross-compile configure
@@ -28,6 +28,12 @@ The SCUMM engine explicitly includes its v7/v8 subengine for Full Throttle,
 The Dig, and The Curse of Monkey Island. CI fails the build if that subengine
 is not present.
 
+The `beta1` Adventure Plus profile also contains `cine`, `cruise`, `dreamweb`,
+`groovie`, `hugo`, `made`, `mads`, `mohawk`, `parallaction`, `tony`, `toon`,
+and `tucker`. Mohawk explicitly includes Myst and Riven. Riven only requires
+the built-in 16-bit graphics support; it does not require the optional
+JPEG/PNG or external audio codec libraries.
+
 Optional compressed-audio and video libraries are disabled in this first
 profile. Original uncompressed game data works; MP3/OGG/FLAC-compressed
 variants may not. A full codec profile can be added after the first package
@@ -39,8 +45,9 @@ has been validated on real hardware.
 2. Keep the default ScummVM ref or enter another official tag.
 3. Download the resulting `scummvm-webos-…` artifact.
 
-Every push to `main` also starts a build. A repository tag beginning with `v`
-creates a GitHub Release and attaches the generated `.ipk`.
+Every push to `main` also starts a beta build. Builds are provided only as
+temporary GitHub Actions artifacts; the workflow does not create GitHub
+Releases.
 
 The workflow uses:
 

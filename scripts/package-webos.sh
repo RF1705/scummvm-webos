@@ -93,6 +93,16 @@ if [[ -z "$ipk" ]]; then
   exit 1
 fi
 
+if [[ -n "${WEBOS_BUILD_SUFFIX:-}" ]]; then
+  if [[ ! "$WEBOS_BUILD_SUFFIX" =~ ^[a-z0-9][a-z0-9.-]*$ ]]; then
+    echo "Invalid webOS build suffix: $WEBOS_BUILD_SUFFIX" >&2
+    exit 1
+  fi
+  beta_ipk="$dist_dir/org.scummvm.scummvm_${version}-${WEBOS_BUILD_SUFFIX}_arm.ipk"
+  mv "$ipk" "$beta_ipk"
+  ipk="$beta_ipk"
+fi
+
 sha256sum "$ipk" > "$ipk.sha256"
 du -h "$ipk"
 echo "PACKAGE_PATH=$ipk"
