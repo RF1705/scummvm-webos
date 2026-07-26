@@ -11,7 +11,8 @@ produces an installable ARM `.ipk`.
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- ScummVM: `v2026.3.0`
+- webOS package: `2026.3.1`
+- ScummVM core: `v2026.3.0`
 
 The small patch in `patches/` only tells ScummVM's cross-compile configure
 step that the supported LG ARM target is little-endian. It does not add a
@@ -22,6 +23,10 @@ point-and-click adventures:
 
 `agi`, `agos`, `drascula`, `gob`, `kyra`, `lure`, `queen`, `saga`, `sci`,
 `scumm`, `sky`, `sword1`, `sword2`, `teenagent`, `tinsel`, and `touche`.
+
+The SCUMM engine explicitly includes its v7/v8 subengine for Full Throttle,
+The Dig, and The Curse of Monkey Island. CI fails the build if that subengine
+is not present.
 
 Optional compressed-audio and video libraries are disabled in this first
 profile. Original uncompressed game data works; MP3/OGG/FLAC-compressed

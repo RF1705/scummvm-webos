@@ -45,6 +45,7 @@ engines=(
   saga
   sci
   scumm
+  scumm_7_8
   sky
   sword1
   sword2
@@ -126,7 +127,12 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-gif \
   --opengl-mode=none \
   --disable-opengl-game \
-  --disable-tinygl
+  --disable-tinygl | tee "$build_dir/configure-summary.txt"
+
+if ! grep -Fq "SCUMM [v7 & v8 games]" "$build_dir/configure-summary.txt"; then
+  echo "SCUMM v7/v8 support was not enabled." >&2
+  exit 1
+fi
 
 make -j"${JOBS:-$(getconf _NPROCESSORS_ONLN)}" scummvm
 

@@ -26,6 +26,7 @@ env:
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
   FREETYPE_VERSION: 2.13.3
+  WEBOS_PACKAGE_VERSION: 2026.3.1
 
 jobs:
   build:

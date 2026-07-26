@@ -22,9 +22,14 @@ if ! command -v ares-package >/dev/null 2>&1; then
   exit 1
 fi
 
-version="$(sed -n 's/^#define SCUMMVM_VERSION "\(.*\)"/\1/p' "$source_dir/base/internal_version.h")"
-if [[ -z "$version" ]]; then
+upstream_version="$(sed -n 's/^#define SCUMMVM_VERSION "\(.*\)"/\1/p' "$source_dir/base/internal_version.h")"
+if [[ -z "$upstream_version" ]]; then
   echo "Could not determine the ScummVM version." >&2
+  exit 1
+fi
+version="${WEBOS_PACKAGE_VERSION:-$upstream_version}"
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Invalid webOS package version: $version" >&2
   exit 1
 fi
 
