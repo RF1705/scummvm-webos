@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
-static void set_webos_locale(void) {
+static void set_webos_locale(char *gui_language) {
+	gui_language[0] = '\0';
+
 	FILE *locale_file = fopen("/var/luna/preferences/localeInfo", "r");
 	if (locale_file == NULL)
 		return;
@@ -32,9 +35,89 @@ static void set_webos_locale(void) {
 	if (destination < 2)
 		return;
 
+	gui_language[0] = locale[0];
+	gui_language[1] = locale[1];
+	gui_language[2] = '\0';
+
 	memcpy(locale + destination, ".UTF-8", sizeof(".UTF-8"));
 	setenv("LANG", locale, 1);
 	setenv("LC_MESSAGES", locale, 1);
+}
+
+static void ensure_gui_language(const char *gui_language) {
+	if (gui_language[0] == '\0')
+		return;
+
+	const char *home = getenv("HOME");
+	if (home == NULL)
+		return;
+
+	char config_directory[PATH_MAX];
+	char config_path[PATH_MAX];
+	char temporary_path[PATH_MAX];
+	if (snprintf(config_directory, sizeof(config_directory),
+	             "%s/.config/scummvm", home) >= (int)sizeof(config_directory) ||
+	    snprintf(config_path, sizeof(config_path), "%s/scummvm.ini",
+	             config_directory) >= (int)sizeof(config_path) ||
+	    snprintf(temporary_path, sizeof(temporary_path), "%s.tmp.%ld",
+	             config_path, (long)getpid()) >= (int)sizeof(temporary_path))
+		return;
+
+	FILE *config = fopen(config_path, "r");
+	if (config != NULL) {
+		char line[1024];
+		while (fgets(line, sizeof(line), config) != NULL) {
+			if (strncmp(line, "gui_language=", sizeof("gui_language=") - 1) ==
+			    0) {
+				fclose(config);
+				return;
+			}
+		}
+		rewind(config);
+	} else if (errno != ENOENT) {
+		return;
+	}
+
+	char parent_directory[PATH_MAX];
+	if (snprintf(parent_directory, sizeof(parent_directory), "%s/.config",
+	             home) >= (int)sizeof(parent_directory)) {
+		if (config != NULL)
+			fclose(config);
+		return;
+	}
+	mkdir(parent_directory, 0755);
+	mkdir(config_directory, 0755);
+
+	FILE *temporary = fopen(temporary_path, "w");
+	if (temporary == NULL) {
+		if (config != NULL)
+			fclose(config);
+		return;
+	}
+
+	int inserted = 0;
+	if (config != NULL) {
+		char line[1024];
+		while (fgets(line, sizeof(line), config) != NULL) {
+			fputs(line, temporary);
+			if (!inserted &&
+			    (strcmp(line, "[scummvm]\n") == 0 ||
+			     strcmp(line, "[scummvm]\r\n") == 0)) {
+				fprintf(temporary, "gui_language=%s\n", gui_language);
+				inserted = 1;
+			}
+		}
+		fclose(config);
+	}
+	if (!inserted)
+		fprintf(temporary, "\n[scummvm]\ngui_language=%s\n", gui_language);
+
+	if (fclose(temporary) == 0) {
+		if (rename(temporary_path, config_path) < 0)
+			unlink(temporary_path);
+	} else {
+		unlink(temporary_path);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -71,7 +154,9 @@ int main(int argc, char **argv) {
 		perror("setenv");
 		return 1;
 	}
-	set_webos_locale();
+	char gui_language[3];
+	set_webos_locale(gui_language);
+	ensure_gui_language(gui_language);
 
 	char **child_argv = calloc((size_t)argc + 1, sizeof(*child_argv));
 	if (child_argv == NULL) {

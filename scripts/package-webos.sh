@@ -46,6 +46,7 @@ install -m 0644 \
   "$source_dir/gui/themes/gui-icons.dat" \
   "$source_dir/gui/themes/scummremastered.zip" \
   "$source_dir/backends/vkeybd/packs/vkeybd_default.zip" \
+  "$source_dir/dists/engine-data/fonts.dat" \
   "$package_dir/"
 
 find_sdk_library() {
