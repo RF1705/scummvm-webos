@@ -74,7 +74,9 @@ echo "Using SDL2 $(pkg-config --modversion sdl2)"
 export PATH="$repo_root/tools:$PATH"
 export SDL_CONFIG=sdl2-config-webos
 export CXXFLAGS="${CXXFLAGS:-} -Os -ffunction-sections -fdata-sections -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
-export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,\$ORIGIN/lib"
+# The value passes through both make and the shell before reaching the linker:
+# $$ survives make, while the single quotes keep the shell from expanding it.
+export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
 
 "$source_dir/configure" \
   --host=arm-webos-linux-gnueabi \
