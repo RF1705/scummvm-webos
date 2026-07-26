@@ -8,7 +8,30 @@ read-only system image. Do not modify it.
 Homebrew applications and `/media/internal` share a small writable partition.
 Large game collections should not be copied there.
 
-## Recommended layout
+## Recommended: NFS network storage
+
+The tested webOS 6.5.3 kernel provides NFS 3 and NFS 4 directly. It does not
+provide CIFS/SMB. NFS therefore avoids installing a large userspace filesystem
+client and keeps all game data off the TV.
+
+Export the game directory from a NAS or Linux server, preferably read-only.
+Then copy `scripts/configure-nfs-games.sh` to the rooted TV and run:
+
+```sh
+./configure-nfs-games.sh 192.168.3.20 /volume1/ScummVM 3
+```
+
+Replace the example server and export. The helper:
+
+- mounts the share read-only at `/media/internal/scummvm-games`;
+- exposes the same path inside ScummVM's native app jail;
+- installs a webOSbrew startup hook for future reboots;
+- leaves configuration and savegames in local app storage.
+
+Inside ScummVM, use `/media/internal/scummvm-games` and choose **Add Games**.
+The NFS server should grant access to the TV's IP address.
+
+## USB alternative
 
 Use a USB drive formatted with a filesystem supported by the TV and create:
 

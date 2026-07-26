@@ -48,6 +48,7 @@ jobs:
         run: |
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
+          sh -n scripts/configure-nfs-games.sh
 
       - name: Download webOS build tools
         env:

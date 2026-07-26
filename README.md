@@ -56,8 +56,9 @@ Content Store.
 
 ## Storage strategy
 
-The application belongs in internal app storage. Game data should live on a
-USB drive:
+The application belongs in internal app storage. Game data should preferably
+live on a read-only NFS share. The tested webOS 6.5.3 TV kernel supports NFS 3
+and NFS 4 natively, while CIFS/SMB is not available.
 
 ```text
 ScummVM/
@@ -67,10 +68,10 @@ ScummVM/
   Saves/
 ```
 
-webOS normally mounts USB volumes below paths such as
-`/tmp/usb/sda/sda1`. Native applications run inside a jail, so a rooted TV
-may need a bind mount before the files become visible inside ScummVM. See
-[docs/storage.md](docs/storage.md).
+The repository includes a persistent webOSbrew NFS mount helper. USB remains
+available as an alternative. Native applications run inside a jail, so both
+approaches need an additional bind mount before files become visible inside
+ScummVM. See [docs/storage.md](docs/storage.md).
 
 Savegames and configuration are small and can remain in the application's
 internal home directory.
@@ -88,9 +89,9 @@ bash scripts/package-webos.sh
 
 ## Project status
 
-Early hardware-validation stage. The CI package still needs to be tested for
-launch, audio, Magic Remote input, gamepad input, suspend/resume, saves, and
-USB visibility on an LG OLED65B19LA running webOS 6.5.3.
+The native package launches successfully on an LG OLED65B19LA running webOS
+6.5.3. The launcher and Magic Remote are functional. Game audio, gamepads,
+suspend/resume, saves, and network storage still need broader validation.
 
 ## Legal
 
