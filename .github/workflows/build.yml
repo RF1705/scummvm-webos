@@ -95,13 +95,14 @@ jobs:
           GOARM: "7"
         run: |
           go mod tidy
+          mkdir -p "$GITHUB_WORKSPACE/helpers"
           go build \
             -trimpath \
             -ldflags="-s -w" \
-            -o "$GITHUB_WORKSPACE/build/rclone-smb" \
+            -o "$GITHUB_WORKSPACE/helpers/rclone-smb" \
             .
-          file "$GITHUB_WORKSPACE/build/rclone-smb"
-          du -h "$GITHUB_WORKSPACE/build/rclone-smb"
+          file "$GITHUB_WORKSPACE/helpers/rclone-smb"
+          du -h "$GITHUB_WORKSPACE/helpers/rclone-smb"
 
       - name: Build ScummVM
         shell: bash
@@ -134,7 +135,7 @@ jobs:
           path: |
             dist/*.ipk
             dist/*.sha256
-            build/rclone-smb
+            helpers/rclone-smb
           if-no-files-found: error
           retention-days: 14
 

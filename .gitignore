@@ -1,4 +1,5 @@
 /build/
 /dist/
+/helpers/
 /upstream/
 *.ipk
