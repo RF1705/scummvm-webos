@@ -1,0 +1,18 @@
+diff --git a/base/commandLine.cpp b/base/commandLine.cpp
+index 7f0ed5c..92ab719 100644
+--- a/base/commandLine.cpp
++++ b/base/commandLine.cpp
+@@ -653,6 +653,13 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
+ 	for (int i = 1; i < argc; ++i) {
+ 		s = argv[i];
+ 		s2 = (i < argc-1) ? argv[i+1] : nullptr;
++
++		// LG webOS passes native lifecycle information as a JSON argument.
++		// SDL consumes it during startup, but ScummVM must not interpret it as
++		// a game target.
++		if (s[0] == '{' && strstr(s, "\"@system_native_app\":") &&
++		    strstr(s, "\"nid\":"))
++			continue;
+ 
+ 		if (s[0] != '-') {
+ 			// The argument doesn't start with a dash, so it's not an option.

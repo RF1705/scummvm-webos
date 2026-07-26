@@ -41,6 +41,12 @@ sed "s/@VERSION@/$version/g" \
 install -m 0644 \
   "$source_dir/dists/emscripten/assets/scummvm-192.png" \
   "$package_dir/icon160.png"
+install -m 0644 \
+  "$source_dir/gui/themes/translations.dat" \
+  "$source_dir/gui/themes/gui-icons.dat" \
+  "$source_dir/gui/themes/scummremastered.zip" \
+  "$source_dir/backends/vkeybd/packs/vkeybd_default.zip" \
+  "$package_dir/"
 
 find_sdk_library() {
   local name="$1"

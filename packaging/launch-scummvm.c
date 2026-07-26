@@ -6,6 +6,37 @@
 #include <string.h>
 #include <unistd.h>
 
+static void set_webos_locale(void) {
+	FILE *locale_file = fopen("/var/luna/preferences/localeInfo", "r");
+	if (locale_file == NULL)
+		return;
+
+	char contents[4096];
+	size_t length = fread(contents, 1, sizeof(contents) - 1, locale_file);
+	fclose(locale_file);
+	contents[length] = '\0';
+
+	const char marker[] = "\"UI\":\"";
+	char *ui = strstr(contents, marker);
+	if (ui == NULL)
+		return;
+	ui += sizeof(marker) - 1;
+
+	char locale[32];
+	size_t destination = 0;
+	while (*ui != '\0' && *ui != '"' &&
+	       destination < sizeof(locale) - sizeof(".UTF-8")) {
+		locale[destination++] = *ui == '-' ? '_' : *ui;
+		++ui;
+	}
+	if (destination < 2)
+		return;
+
+	memcpy(locale + destination, ".UTF-8", sizeof(".UTF-8"));
+	setenv("LANG", locale, 1);
+	setenv("LC_MESSAGES", locale, 1);
+}
+
 int main(int argc, char **argv) {
 	char executable[PATH_MAX];
 	ssize_t executable_length =
@@ -40,6 +71,7 @@ int main(int argc, char **argv) {
 		perror("setenv");
 		return 1;
 	}
+	set_webos_locale();
 
 	char **child_argv = calloc((size_t)argc + 1, sizeof(*child_argv));
 	if (child_argv == NULL) {
@@ -49,9 +81,6 @@ int main(int argc, char **argv) {
 
 	child_argv[0] = scummvm;
 	int source = 1;
-	if (argc > 1 && argv[1][0] == '{') {
-		source = 2;
-	}
 	int destination = 1;
 	while (source < argc) {
 		child_argv[destination++] = argv[source++];
