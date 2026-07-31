@@ -1,0 +1,13 @@
+{
+  "id": "org.scummvm.launcher.template",
+  "version": "1.0.0",
+  "vendor": "RF1705",
+  "type": "web",
+  "main": "index.html",
+  "title": "ScummVM Game",
+  "icon": "icon.png",
+  "largeIcon": "icon.png",
+  "appDescription": "Launches a configured ScummVM game",
+  "noSplashOnLaunch": true,
+  "transparent": true
+}
