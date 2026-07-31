@@ -22,6 +22,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript
+        run: |
+          node --check pages/app.js
+          node --check launcher-template/launcher.js
+
       - name: Download ares-package
         env:
           GH_TOKEN: ${{ github.token }}
@@ -62,6 +67,20 @@ jobs:
           cp -a pages/. site/
           touch site/.nojekyll
           ls -lh site/template.ipk
+
+      - name: Inspect template IPK
+        run: |
+          inspect_dir="$(mktemp -d)"
+          (
+            cd "$inspect_dir"
+            ar x "$GITHUB_WORKSPACE/site/template.ipk"
+            test "$(cat debian-binary)" = "2.0"
+            test -s control.tar.gz
+            test -s data.tar.gz
+            tar -tzf control.tar.gz | grep -Eq '(^|/)control$'
+            tar -tzf data.tar.gz | grep -Eq '(^|/)appinfo.json$'
+            tar -tzf data.tar.gz | grep -Eq '(^|/)launcher.js$'
+          )
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
