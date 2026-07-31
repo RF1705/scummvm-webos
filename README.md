@@ -66,6 +66,14 @@ Homebrew Channel's manual package installation.
 The package is a native homebrew application and is not intended for the LG
 Content Store.
 
+## Game launcher generator
+
+Create individual webOS launcher apps for configured ScummVM games with the
+[ScummVM webOS game launcher generator](https://rf1705.github.io/scummvm-webos/).
+The generated launcher starts the central `org.scummvm.scummvm` installation
+with the selected ScummVM target. The target must already exist in the shared
+ScummVM configuration.
+
 ## Game data
 
 The package contains no games. Store legally obtained game data on a location
