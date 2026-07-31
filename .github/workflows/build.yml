@@ -50,7 +50,6 @@ jobs:
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
           sh -n scripts/configure-nfs-games.sh
-          sh -n scripts/configure-smb-games.sh
 
       - name: Download webOS build tools
         env:
@@ -80,30 +79,6 @@ jobs:
           "$RUNNER_TEMP/webos-ndk/relocate-sdk.sh"
           tar -xzf "$RUNNER_TEMP/downloads/sdl2.tar.gz" \
             -C "$RUNNER_TEMP/sdl2"
-
-      - name: Set up Go for SMB helper
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: tools/rclone-smb/go.mod
-          cache-dependency-path: tools/rclone-smb/go.mod
-
-      - name: Build ARMv7 SMB mount helper
-        working-directory: tools/rclone-smb
-        env:
-          CGO_ENABLED: "0"
-          GOOS: linux
-          GOARCH: arm
-          GOARM: "7"
-        run: |
-          go mod tidy
-          mkdir -p "$GITHUB_WORKSPACE/helpers"
-          go build \
-            -trimpath \
-            -ldflags="-s -w" \
-            -o "$GITHUB_WORKSPACE/helpers/rclone-smb" \
-            .
-          file "$GITHUB_WORKSPACE/helpers/rclone-smb"
-          du -h "$GITHUB_WORKSPACE/helpers/rclone-smb"
 
       - name: Build static FreeType for localized GUI
         shell: bash
@@ -163,6 +138,5 @@ jobs:
           path: |
             dist/*.ipk
             dist/*.sha256
-            helpers/rclone-smb
           if-no-files-found: error
           retention-days: 14
