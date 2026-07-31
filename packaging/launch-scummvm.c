@@ -7,6 +7,40 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static int extract_launch_target(const char *argument, char *target,
+                                 size_t target_size) {
+	const char marker[] = "\"target\"";
+	const char *position = strstr(argument, marker);
+	if (position == NULL)
+		return 0;
+	position += sizeof(marker) - 1;
+	while (*position == ' ' || *position == '\t')
+		++position;
+	if (*position++ != ':')
+		return 0;
+	while (*position == ' ' || *position == '\t')
+		++position;
+	if (*position++ != '"')
+		return 0;
+
+	size_t length = 0;
+	while (*position != '\0' && *position != '"') {
+		char character = *position++;
+		if (!((character >= 'a' && character <= 'z') ||
+		      (character >= 'A' && character <= 'Z') ||
+		      (character >= '0' && character <= '9') || character == '_' ||
+		      character == '-'))
+			return 0;
+		if (length + 1 >= target_size)
+			return 0;
+		target[length++] = character;
+	}
+	if (*position != '"' || length == 0)
+		return 0;
+	target[length] = '\0';
+	return 1;
+}
+
 static void set_webos_locale(char *gui_language) {
 	gui_language[0] = '\0';
 
@@ -158,18 +192,26 @@ int main(int argc, char **argv) {
 	set_webos_locale(gui_language);
 	ensure_gui_language(gui_language);
 
-	char **child_argv = calloc((size_t)argc + 1, sizeof(*child_argv));
+	char **child_argv = calloc((size_t)argc + 2, sizeof(*child_argv));
 	if (child_argv == NULL) {
 		perror("calloc");
 		return 1;
 	}
 
+	char launch_target[65] = {0};
 	child_argv[0] = scummvm;
 	int source = 1;
 	int destination = 1;
 	while (source < argc) {
+		if (extract_launch_target(argv[source], launch_target,
+		                          sizeof(launch_target))) {
+			++source;
+			continue;
+		}
 		child_argv[destination++] = argv[source++];
 	}
+	if (launch_target[0] != '\0')
+		child_argv[destination++] = launch_target;
 
 	int log = open("/tmp/org.scummvm.scummvm.log",
 	               O_WRONLY | O_CREAT | O_TRUNC, 0600);
