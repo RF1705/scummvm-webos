@@ -136,7 +136,7 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-theoradec \
   --disable-vpx \
   --disable-faad \
-  --enable-freetype2 \
+  --disable-freetype2 \
   --disable-jpeg \
   --disable-png \
   --disable-gif \
