@@ -31,27 +31,6 @@ Replace the example server and export. The helper:
 Inside ScummVM, use `/media/internal/scummvm-games` and choose **Add Games**.
 The NFS server should grant access to the TV's IP address.
 
-## FRITZ!NAS over SMB
-
-FRITZ!Box NAS storage is normally shared over SMB rather than NFS. The TV
-kernel does not contain CIFS, but it does provide FUSE. CI therefore builds a
-small ARMv7 `rclone-smb` helper containing only the rclone SMB, mount, listing,
-password-obscuring, and version commands.
-
-Download the CI artifact and place `rclone-smb` next to
-`scripts/configure-smb-games.sh` on the rooted TV. Create a dedicated
-FRITZ!Box user with read-only NAS access, then run:
-
-```sh
-./configure-smb-games.sh fritz.box FRITZ.NAS/ScummVM scummvm
-```
-
-The script prompts for the password without echoing it. The password is stored
-in rclone's obscured format in a root-only file. This prevents accidental
-disclosure but is not encryption against root. The mount itself is read-only,
-starts through webOSbrew after reboots, and appears inside ScummVM at
-`/media/internal/scummvm-games`.
-
 ## USB alternative
 
 Use a USB drive formatted with a filesystem supported by the TV and create:
