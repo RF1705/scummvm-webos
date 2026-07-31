@@ -1,0 +1,83 @@
+name: Deploy launcher generator
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download ares-package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/downloads"
+          gh release download \
+            --repo webosbrew/ares-cli-rs \
+            --pattern 'ares-package_*_amd64.deb' \
+            --dir "$RUNNER_TEMP/downloads"
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb \
+            imagemagick
+
+      - name: Build template IPK
+        run: |
+          rm -rf "$RUNNER_TEMP/launcher-template" site
+          cp -a launcher-template "$RUNNER_TEMP/launcher-template"
+          convert -size 160x160 \
+            -background '#1b2138' \
+            -fill '#ffffff' \
+            -gravity center \
+            -font DejaVu-Sans-Bold \
+            -pointsize 28 \
+            label:'ScummVM' \
+            "$RUNNER_TEMP/launcher-template/icon.png"
+          mkdir -p site
+          (
+            cd "$RUNNER_TEMP"
+            ares-package launcher-template --outdir "$GITHUB_WORKSPACE/site"
+          )
+          template="$(find site -maxdepth 1 -name '*.ipk' -print -quit)"
+          test -n "$template"
+          mv "$template" site/template.ipk
+          cp -a pages/. site/
+          touch site/.nojekyll
+          ls -lh site/template.ipk
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
