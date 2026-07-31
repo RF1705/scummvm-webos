@@ -69,10 +69,8 @@ Content Store.
 ## Storage strategy
 
 The application belongs in internal app storage. Game data should preferably
-live on a read-only network share. The tested webOS 6.5.3 TV kernel supports
-NFS 3 and NFS 4 natively. For FRITZ!NAS and other SMB-only servers, CI also
-builds a reduced ARMv7 rclone-over-FUSE helper; no LG kernel modification is
-required.
+live on a read-only NFS share. The tested webOS 6.5.3 TV kernel supports NFS 3
+and NFS 4 natively, while CIFS/SMB is not available.
 
 ```text
 ScummVM/
