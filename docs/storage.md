@@ -8,51 +8,7 @@ read-only system image. Do not modify it.
 Homebrew applications and `/media/internal` share a small writable partition.
 Large game collections should not be copied there.
 
-## Recommended: NFS network storage
-
-The tested webOS 6.5.3 kernel provides NFS 3 and NFS 4 directly. It does not
-provide CIFS/SMB. NFS therefore avoids installing a large userspace filesystem
-client and keeps all game data off the TV.
-
-Export the game directory from a NAS or Linux server, preferably read-only.
-Then copy `scripts/configure-nfs-games.sh` to the rooted TV and run:
-
-```sh
-./configure-nfs-games.sh 192.168.3.20 /volume1/ScummVM 3
-```
-
-Replace the example server and export. The helper:
-
-- mounts the share read-only at `/media/internal/scummvm-games`;
-- exposes the same path inside ScummVM's native app jail;
-- installs a webOSbrew startup hook for future reboots;
-- leaves configuration and savegames in local app storage.
-
-Inside ScummVM, use `/media/internal/scummvm-games` and choose **Add Games**.
-The NFS server should grant access to the TV's IP address.
-
-## FRITZ!NAS over SMB
-
-FRITZ!Box NAS storage is normally shared over SMB rather than NFS. The TV
-kernel does not contain CIFS, but it does provide FUSE. CI therefore builds a
-small ARMv7 `rclone-smb` helper containing only the rclone SMB, mount, listing,
-password-obscuring, and version commands.
-
-Download the CI artifact and place `rclone-smb` next to
-`scripts/configure-smb-games.sh` on the rooted TV. Create a dedicated
-FRITZ!Box user with read-only NAS access, then run:
-
-```sh
-./configure-smb-games.sh fritz.box FRITZ.NAS/ScummVM scummvm
-```
-
-The script prompts for the password without echoing it. The password is stored
-in rclone's obscured format in a root-only file. This prevents accidental
-disclosure but is not encryption against root. The mount itself is read-only,
-starts through webOSbrew after reboots, and appears inside ScummVM at
-`/media/internal/scummvm-games`.
-
-## USB alternative
+## USB storage
 
 Use a USB drive formatted with a filesystem supported by the TV and create:
 
@@ -96,11 +52,9 @@ mount --bind "$USB_PATH" "$JAIL_PATH"
 
 Inside ScummVM, browse to `/tmp/usb/sda/sda1/ScummVM/Games`.
 
-The mount is temporary and disappears after a reboot or USB reconnect. An
-automatic webOSbrew startup helper will be added after the package and path
-have been verified on hardware. Hard-coding `sda` permanently is avoided
-because webOS can assign a different device letter after reconnecting USB
-devices.
+The mount is temporary and disappears after a reboot or USB reconnect.
+Hard-coding `sda` permanently is avoided because webOS can assign a different
+device letter after reconnecting USB devices.
 
 ## Internal fallback
 

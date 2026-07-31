@@ -66,26 +66,11 @@ Homebrew Channel's manual package installation.
 The package is a native homebrew application and is not intended for the LG
 Content Store.
 
-## Storage strategy
+## Game data
 
-The application belongs in internal app storage. Game data should preferably
-live on a read-only network share. The tested webOS 6.5.3 TV kernel supports
-NFS 3 and NFS 4 natively. For FRITZ!NAS and other SMB-only servers, CI also
-builds a reduced ARMv7 rclone-over-FUSE helper; no LG kernel modification is
-required.
-
-```text
-ScummVM/
-  Games/
-    Monkey Island/
-    Day of the Tentacle/
-  Saves/
-```
-
-The repository includes a persistent webOSbrew NFS mount helper. USB remains
-available as an alternative. Native applications run inside a jail, so both
-approaches need an additional bind mount before files become visible inside
-ScummVM. See [docs/storage.md](docs/storage.md).
+The package contains no games. Store legally obtained game data on a location
+that is already visible to the application, for example supported USB storage
+or a small local test directory.
 
 Savegames and configuration are small and can remain in the application's
 internal home directory.
@@ -105,7 +90,7 @@ bash scripts/package-webos.sh
 
 The native package launches successfully on an LG OLED65B19LA running webOS
 6.5.3. The launcher and Magic Remote are functional. Game audio, gamepads,
-suspend/resume, saves, and network storage still need broader validation.
+suspend/resume, saves, and storage access still need broader validation.
 
 ## Legal
 
