@@ -115,8 +115,6 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --enable-vkeybd \
   --enable-mt32emu \
   --enable-freetype2 \
-  --enable-highres \
-  --enable-16bit \
   --disable-taskbar \
   --disable-cloud \
   --disable-eventrecorder \
