@@ -37,8 +37,10 @@ fi
 engines=(
   agi
   agos
+  bladerunner
   cine
   cruise
+  director
   drascula
   dreamweb
   gob
@@ -67,6 +69,7 @@ engines=(
   toon
   touche
   tucker
+  zvision
 )
 
 engine_list="$(IFS=,; echo "${engines[*]}")"
@@ -110,13 +113,16 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-detection-full \
   --enable-ext-neon \
   --enable-vkeybd \
+  --enable-mt32emu \
+  --enable-freetype2 \
+  --enable-highres \
+  --enable-16bit \
   --disable-taskbar \
   --disable-cloud \
   --disable-eventrecorder \
   --disable-updates \
   --disable-tts \
   --disable-system-dialogs \
-  --disable-mt32emu \
   --disable-alsa \
   --disable-seq-midi \
   --disable-timidity \
@@ -127,19 +133,10 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-sdlnet \
   --disable-enet \
   --disable-discord \
-  --disable-ogg \
-  --disable-vorbis \
-  --disable-tremor \
-  --disable-mad \
-  --disable-flac \
   --disable-mpeg2 \
   --disable-theoradec \
   --disable-vpx \
   --disable-faad \
-  --enable-freetype2 \
-  --disable-jpeg \
-  --disable-png \
-  --disable-gif \
   --opengl-mode=none \
   --disable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
@@ -165,6 +162,9 @@ required_engine_descriptions=(
   "Tony Tough and the Night of Roasted Moths"
   "Toonstruck"
   "Bud Tucker in Double Trouble"
+  "Blade Runner"
+  "Macromedia Director"
+  "Z-Vision"
 )
 
 for engine_description in "${required_engine_descriptions[@]}"; do
