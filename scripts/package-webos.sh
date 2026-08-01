@@ -104,6 +104,9 @@ if [[ -n "${WEBOS_BUILD_SUFFIX:-}" ]]; then
   ipk="$beta_ipk"
 fi
 
-sha256sum "$ipk" > "$ipk.sha256"
+(
+  cd "$(dirname "$ipk")"
+  sha256sum "$(basename "$ipk")"
+) > "$ipk.sha256"
 du -h "$ipk"
 echo "PACKAGE_PATH=$ipk"

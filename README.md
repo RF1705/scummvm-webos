@@ -11,7 +11,7 @@ produces an installable ARM `.ipk`.
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- webOS build: `v2026.3.0-beta1`
+- webOS release: `scummvm_2026.3.0_webos_1.0.0`
 - ScummVM core: `v2026.3.0`
 
 The small patch in `patches/` only tells ScummVM's cross-compile configure
@@ -28,9 +28,10 @@ The SCUMM engine explicitly includes its v7/v8 subengine for Full Throttle,
 The Dig, and The Curse of Monkey Island. CI fails the build if that subengine
 is not present.
 
-The `beta1` Adventure Plus profile also contains `cine`, `cruise`, `dreamweb`,
+The webOS 1.0.0 Adventure Plus profile also contains `cine`, `cruise`, `dreamweb`,
 `groovie`, `hugo`, `made`, `mads`, `mohawk`, `parallaction`, `tony`, `toon`,
-and `tucker`. Mohawk explicitly includes Myst and Riven. Riven only requires
+`tucker`, `bladerunner`, `director`, and `zvision`. Mohawk explicitly includes
+Myst and Riven. Riven only requires
 the built-in 16-bit graphics support; it does not require the optional
 JPEG/PNG or external audio codec libraries.
 
@@ -45,9 +46,10 @@ has been validated on real hardware.
 2. Keep the default ScummVM ref or enter another official tag.
 3. Download the resulting `scummvm-webos-…` artifact.
 
-Every push to `main` also starts a beta build. Builds are provided only as
-temporary GitHub Actions artifacts; the workflow does not create GitHub
-Releases.
+Every push to `main` also starts a validation build. Pushing a release tag that
+matches `scummvm_*_webos_*` builds the IPK from scratch, verifies its runtime
+data and shared libraries, generates the Homebrew Channel manifest, and
+publishes all three files as GitHub Release assets.
 
 The workflow uses:
 

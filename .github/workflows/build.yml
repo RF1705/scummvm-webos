@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'scummvm_*_webos_*'
   pull_request:
   workflow_dispatch:
     inputs:
@@ -24,7 +26,7 @@ env:
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
   WEBOS_PACKAGE_VERSION: 2026.3.0
-  WEBOS_BUILD_SUFFIX: beta1
+  WEBOS_BUILD_SUFFIX: webos1.0.0
 
 jobs:
   build:
@@ -100,7 +102,43 @@ jobs:
         run: |
           ls -lh dist/*.ipk dist/*.sha256
           file dist/package/scummvm dist/package/scummvm.bin dist/package/lib/*
+          test -s dist/package/fonts.dat
+          test -s dist/package/translations.dat
+          test -s dist/package/scummremastered.zip
+          test -s dist/package/lib/libjpeg.so.8
           cat dist/*.sha256
+
+      - name: Generate Homebrew Channel manifest
+        shell: bash
+        run: |
+          ipk="$(find dist -maxdepth 1 -name '*.ipk' -print -quit)"
+          ipk_name="$(basename "$ipk")"
+          ipk_hash="$(sha256sum "$ipk" | cut -d ' ' -f 1)"
+          ipk_size="$(stat -c '%s' "$ipk")"
+          jq -n \
+            --arg id "org.scummvm.scummvm" \
+            --arg version "$WEBOS_PACKAGE_VERSION" \
+            --arg type "native" \
+            --arg title "ScummVM" \
+            --arg appDescription "Classic adventure game engine" \
+            --arg iconUri "https://raw.githubusercontent.com/scummvm/scummvm/v2026.3.0/dists/emscripten/assets/scummvm-192.png" \
+            --arg sourceUrl "https://github.com/$GITHUB_REPOSITORY" \
+            --arg ipkUrl "$ipk_name" \
+            --arg sha256 "$ipk_hash" \
+            --argjson ipkSize "$ipk_size" \
+            '{
+              id: $id,
+              version: $version,
+              type: $type,
+              title: $title,
+              appDescription: $appDescription,
+              iconUri: $iconUri,
+              sourceUrl: $sourceUrl,
+              ipkUrl: $ipkUrl,
+              ipkHash: {sha256: $sha256},
+              ipkSize: $ipkSize
+            }' > dist/org.scummvm.scummvm.manifest.json
+          jq . dist/org.scummvm.scummvm.manifest.json
 
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
@@ -109,5 +147,44 @@ jobs:
           path: |
             dist/*.ipk
             dist/*.sha256
+            dist/*.manifest.json
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    name: Publish GitHub release
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'scummvm_')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download workflow artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: scummvm-webos-v${{ env.WEBOS_PACKAGE_VERSION }}-${{ env.WEBOS_BUILD_SUFFIX }}-${{ github.sha }}-arm
+          path: release
+
+      - name: Verify release artifact
+        shell: bash
+        run: |
+          cd release
+          sha256sum --check *.sha256
+          manifest_ipk="$(jq -r '.ipkUrl' org.scummvm.scummvm.manifest.json)"
+          manifest_hash="$(jq -r '.ipkHash.sha256' org.scummvm.scummvm.manifest.json)"
+          test -f "$manifest_ipk"
+          test "$manifest_hash" = "$(sha256sum "$manifest_ipk" | cut -d ' ' -f 1)"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            release/*.ipk \
+            release/*.sha256 \
+            release/*.manifest.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --notes "ScummVM $WEBOS_PACKAGE_VERSION for rooted LG webOS TVs. Built and verified by GitHub Actions from $GITHUB_SHA."
