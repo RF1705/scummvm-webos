@@ -71,6 +71,7 @@ copy_sdk_library() {
 
 copy_sdk_library libstdc++.so.6
 copy_sdk_library libatomic.so.1
+copy_sdk_library libjpeg.so.8
 
 if [[ -n "${SDL2_BUNDLE_DIR:-}" ]]; then
   sdl_path="$(find "$SDL2_BUNDLE_DIR" -name 'libSDL2-2.0.so.0' -print -quit)"
