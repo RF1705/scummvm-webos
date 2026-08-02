@@ -26,11 +26,11 @@ env:
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
   WEBOS_PACKAGE_VERSION: 2026.3.0
-  WEBOS_BUILD_SUFFIX: webos1.0.0
+  WEBOS_BUILD_SUFFIX: webos1.1.0
 
 jobs:
   build:
-    name: ARMv7 lite package
+    name: ARMv7 codec package
     runs-on: ubuntu-24.04
     timeout-minutes: 90
 
@@ -48,6 +48,7 @@ jobs:
 
       - name: Validate repository scripts
         run: |
+          bash -n scripts/build-codecs.sh
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
 
@@ -71,7 +72,13 @@ jobs:
       - name: Install webOS build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
+          sudo apt-get install -y \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            xz-utils \
+            "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
           mkdir -p "$RUNNER_TEMP/webos-ndk" "$RUNNER_TEMP/sdl2"
           tar -xzf "$RUNNER_TEMP/downloads/$SDK_ARCHIVE" \
             -C "$RUNNER_TEMP/webos-ndk" \
@@ -80,12 +87,29 @@ jobs:
           tar -xzf "$RUNNER_TEMP/downloads/sdl2.tar.gz" \
             -C "$RUNNER_TEMP/sdl2"
 
+      - name: Restore static codec cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/webos-codecs
+            ${{ runner.temp }}/codec-sources/downloads
+          key: webos-codecs-${{ runner.os }}-${{ env.SDK_ARCHIVE }}-${{ hashFiles('scripts/build-codecs.sh') }}
+
+      - name: Build static audio and video codecs
+        shell: bash
+        run: |
+          source "$RUNNER_TEMP/webos-ndk/environment-setup"
+          CODEC_SOURCE_DIR="$RUNNER_TEMP/codec-sources" \
+            CODEC_PREFIX="$RUNNER_TEMP/webos-codecs" \
+            bash scripts/build-codecs.sh
+
       - name: Build ScummVM
         shell: bash
         run: |
           source "$RUNNER_TEMP/webos-ndk/environment-setup"
           SCUMMVM_SOURCE_DIR="$GITHUB_WORKSPACE/upstream" \
             BUILD_DIR="$GITHUB_WORKSPACE/build" \
+            CODEC_PREFIX="$RUNNER_TEMP/webos-codecs" \
             bash scripts/build-webos.sh
 
       - name: Package IPK
@@ -106,6 +130,20 @@ jobs:
           test -s dist/package/translations.dat
           test -s dist/package/scummremastered.zip
           test -s dist/package/lib/libjpeg.so.8
+          for archive in \
+            libogg.a \
+            libvorbis.a \
+            libvorbisfile.a \
+            libFLAC.a \
+            libmad.a \
+            libmpeg2.a \
+            libmpeg2convert.a \
+            libtheora.a \
+            libtheoradec.a; do
+            test -s "$RUNNER_TEMP/webos-codecs/lib/$archive"
+          done
+          grep -E '^#define (USE_OGG|USE_VORBIS|USE_FLAC|USE_MAD|USE_MPEG2|USE_THEORADEC)' \
+            build/config.h
           cat dist/*.sha256
 
       - name: Generate Homebrew Channel manifest
@@ -187,4 +225,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "$GITHUB_REF_NAME" \
-            --notes "ScummVM $WEBOS_PACKAGE_VERSION for rooted LG webOS TVs. Built and verified by GitHub Actions from $GITHUB_SHA."
+            --notes "ScummVM $WEBOS_PACKAGE_VERSION for rooted LG webOS TVs. Includes statically linked Ogg Vorbis, MP3, FLAC, MPEG-1/2 and Theora support. Built and verified by GitHub Actions from $GITHUB_SHA."
