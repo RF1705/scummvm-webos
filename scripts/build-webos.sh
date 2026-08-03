@@ -177,6 +177,17 @@ export LDFLAGS="-L$codec_prefix/lib ${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\
   --opengl-mode=gles2 \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
+echo "==== TWP configure diagnostics ===="
+grep -Ein 'twp|thimbleweed|imgui|opengl|shader|png|vorbis|gles' \
+  "$build_dir/configure-summary.txt" || true
+
+echo "==== TWP relevant config defines ===="
+grep -E '^#define (USE_IMGUI|USE_OPENGL|USE_OPENGL_GAME|USE_OPENGL_GAME_SHADERS|USE_PNG|USE_VORBIS|USE_GLES2)' \
+  "$build_dir/config.h" || true
+
+echo "==== TWP engine declaration ===="
+cat "$source_dir/engines/twp/configure.engine" || true
+
 enabled_engine_summary="$build_dir/enabled-engines.txt"
 awk '
   /^Engines \(builtin\):$/ { enabled = 1; next }
