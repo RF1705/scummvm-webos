@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if (defined(CODEC_TEST_MP3) + defined(CODEC_TEST_MPEG2) + defined(CODEC_TEST_THEORA)) != 1
+#error "Define exactly one codec test"
+#endif
+
+#if defined(CODEC_TEST_MP3)
 #include <mad.h>
-#include <mpeg2dec/mpeg2.h>
-#include <ogg/ogg.h>
-#include <theora/theoradec.h>
 
 static unsigned char *read_file(const char *path, size_t extra, size_t *size_out) {
     FILE *file = fopen(path, "rb");
@@ -42,7 +44,7 @@ static unsigned char *read_file(const char *path, size_t extra, size_t *size_out
     return data;
 }
 
-static int test_mp3(const char *path) {
+static int run_test(const char *path) {
     size_t size = 0;
     unsigned char *data = read_file(path, MAD_BUFFER_GUARD, &size);
     struct mad_stream stream;
@@ -90,7 +92,13 @@ static int test_mp3(const char *path) {
     return 0;
 }
 
-static int test_mpeg2(const char *path) {
+#define CODEC_NAME "MP3"
+#endif
+
+#if defined(CODEC_TEST_MPEG2)
+#include <mpeg2dec/mpeg2.h>
+
+static int run_test(const char *path) {
     FILE *file = fopen(path, "rb");
     mpeg2dec_t *decoder;
     unsigned char buffer[4096];
@@ -104,7 +112,7 @@ static int test_mpeg2(const char *path) {
     }
 
     /* qemu-user is unreliable with libmpeg2's legacy ARM assembly. The TV
-     * build still contains it; only this smoke-test process disables it. */
+     * package still contains it; only this test process disables dispatch. */
     mpeg2_accel(0);
     decoder = mpeg2_init();
     if (!decoder) {
@@ -140,7 +148,14 @@ static int test_mpeg2(const char *path) {
     return 0;
 }
 
-static int decode_theora_packet(th_dec_ctx *decoder, ogg_packet *packet) {
+#define CODEC_NAME "MPEG-2"
+#endif
+
+#if defined(CODEC_TEST_THEORA)
+#include <ogg/ogg.h>
+#include <theora/theoradec.h>
+
+static int decode_packet(th_dec_ctx *decoder, ogg_packet *packet) {
     ogg_int64_t granule = 0;
     th_ycbcr_buffer image;
     int result = th_decode_packetin(decoder, packet, &granule);
@@ -159,7 +174,7 @@ static int decode_theora_packet(th_dec_ctx *decoder, ogg_packet *packet) {
     return 1;
 }
 
-static int test_theora(const char *path) {
+static int run_test(const char *path) {
     FILE *file = fopen(path, "rb");
     ogg_sync_state sync;
     ogg_stream_state stream;
@@ -221,7 +236,7 @@ static int test_theora(const char *path) {
                         }
                     }
                 } else {
-                    int result = decode_theora_packet(decoder, &packet);
+                    int result = decode_packet(decoder, &packet);
                     if (result < 0)
                         goto cleanup;
                     decoded = result;
@@ -252,23 +267,18 @@ cleanup:
     return 0;
 }
 
+#define CODEC_NAME "Theora"
+#endif
+
 int main(int argc, char **argv) {
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s {mp3|mpeg2|theora} TEST_FILE\n", argv[0]);
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s TEST_FILE\n", argv[0]);
         return 2;
     }
 
-    printf("Running %s decoder test\n", argv[1]);
-    if (strcmp(argv[1], "mp3") == 0)
-        return test_mp3(argv[2]);
-    if (strcmp(argv[1], "mpeg2") == 0)
-        return test_mpeg2(argv[2]);
-    if (strcmp(argv[1], "theora") == 0)
-        return test_theora(argv[2]);
-
-    fprintf(stderr, "Unknown codec test: %s\n", argv[1]);
-    return 2;
+    printf("Running %s decoder test\n", CODEC_NAME);
+    return run_test(argv[1]);
 }
