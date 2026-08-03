@@ -102,6 +102,10 @@ static int test_mpeg2(const char *path) {
         fprintf(stderr, "Cannot open %s: %s\n", path, strerror(errno));
         return 1;
     }
+
+    /* qemu-user is unreliable with libmpeg2's legacy ARM assembly. The TV
+     * build still contains it; only this smoke-test process disables it. */
+    mpeg2_accel(0);
     decoder = mpeg2_init();
     if (!decoder) {
         fprintf(stderr, "mpeg2_init failed\n");
@@ -249,16 +253,22 @@ cleanup:
 }
 
 int main(int argc, char **argv) {
-    if (argc != 4) {
-        fprintf(stderr, "Usage: %s TEST.mp3 TEST.m2v TEST.ogv\n", argv[0]);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s {mp3|mpeg2|theora} TEST_FILE\n", argv[0]);
         return 2;
     }
-    if (test_mp3(argv[1]) != 0)
-        return 1;
-    if (test_mpeg2(argv[2]) != 0)
-        return 1;
-    if (test_theora(argv[3]) != 0)
-        return 1;
-    puts("All target codec smoke tests passed.");
-    return 0;
+
+    printf("Running %s decoder test\n", argv[1]);
+    if (strcmp(argv[1], "mp3") == 0)
+        return test_mp3(argv[2]);
+    if (strcmp(argv[1], "mpeg2") == 0)
+        return test_mpeg2(argv[2]);
+    if (strcmp(argv[1], "theora") == 0)
+        return test_theora(argv[2]);
+
+    fprintf(stderr, "Unknown codec test: %s\n", argv[1]);
+    return 2;
 }
