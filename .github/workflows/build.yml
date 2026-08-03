@@ -77,9 +77,12 @@ jobs:
             autoconf \
             automake \
             ffmpeg \
+            libmad0-dev \
+            libmpeg2-4-dev \
+            libogg-dev \
+            libtheora-dev \
             libtool \
             pkg-config \
-            qemu-user \
             xz-utils \
             "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
           mkdir -p "$RUNNER_TEMP/webos-ndk" "$RUNNER_TEMP/sdl2"
