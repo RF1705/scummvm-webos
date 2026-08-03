@@ -4,30 +4,22 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 codec_prefix="${CODEC_PREFIX:-$repo_root/build/codecs}"
 work_dir="${CODEC_TEST_DIR:-$repo_root/build/codec-smoke}"
-qemu_arm="${QEMU_ARM:-qemu-arm}"
+host_cc="${HOST_CC:-gcc}"
 
-if [[ -z "${CC:-}" || -z "${STAGING_DIR:-}" ]]; then
+if [[ -z "${AR:-}" || -z "${NM:-}" ]]; then
   echo "Source the webOS NDK environment-setup before running codec tests." >&2
   exit 1
 fi
 
-for command in ffmpeg "$qemu_arm"; do
+for command in ffmpeg file "$host_cc" "$AR" "$NM"; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "Required test command not found: $command" >&2
     exit 1
   fi
 done
 
-required_archives=(libmad.a libmpeg2.a libtheoradec.a libogg.a)
-for archive in "${required_archives[@]}"; do
-  test -s "$codec_prefix/lib/$archive" || {
-    echo "Missing codec archive: $codec_prefix/lib/$archive" >&2
-    exit 1
-  }
-done
-
 rm -rf "$work_dir"
-mkdir -p "$work_dir"
+mkdir -p "$work_dir/target-objects"
 
 ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i 'sine=frequency=440:sample_rate=22050:duration=0.5' \
@@ -41,40 +33,62 @@ ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i 'testsrc=size=32x32:rate=5:duration=1' \
   -an -pix_fmt yuv420p -c:v libtheora -q:v 4 -f ogg "$work_dir/test.ogv"
 
-common_flags=(
-  -std=c99 -Wall -Wextra -Werror -Os
-  -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon
-  -I"$codec_prefix/include"
-  "$repo_root/tests/codec-smoke.c"
-  -L"$codec_prefix/lib"
-  -Wl,--gc-sections
-)
+build_and_run_host_test() {
+  local name="$1"
+  local define="$2"
+  local sample="$3"
+  shift 3
 
-"$CC" "${common_flags[@]}" \
-  -DCODEC_TEST_MP3 \
-  -lmad -lm \
-  -o "$work_dir/codec-smoke-mp3"
+  "$host_cc" \
+    -std=c99 -Wall -Wextra -Werror -O2 \
+    "-D$define" \
+    "$repo_root/tests/codec-smoke.c" \
+    "$@" \
+    -o "$work_dir/codec-smoke-$name"
 
-"$CC" "${common_flags[@]}" \
-  -DCODEC_TEST_MPEG2 \
-  -lmpeg2 \
-  -o "$work_dir/codec-smoke-mpeg2"
-
-"$CC" "${common_flags[@]}" \
-  -DCODEC_TEST_THEORA \
-  -ltheoradec -logg \
-  -o "$work_dir/codec-smoke-theora"
-
-run_codec_test() {
-  local binary="$1"
-  local sample="$2"
-  echo "Running ARM $(basename "$binary") under QEMU"
-  file "$binary"
-  "$qemu_arm" -cpu cortex-a9 -L "$STAGING_DIR" "$binary" "$sample"
+  echo "Running native $name decoder smoke test"
+  "$work_dir/codec-smoke-$name" "$sample"
 }
 
-run_codec_test "$work_dir/codec-smoke-mp3" "$work_dir/test.mp3"
-run_codec_test "$work_dir/codec-smoke-mpeg2" "$work_dir/test.m2v"
-run_codec_test "$work_dir/codec-smoke-theora" "$work_dir/test.ogv"
+build_and_run_host_test mp3 CODEC_TEST_MP3 "$work_dir/test.mp3" -lmad -lm
+build_and_run_host_test mpeg2 CODEC_TEST_MPEG2 "$work_dir/test.m2v" -lmpeg2
+build_and_run_host_test theora CODEC_TEST_THEORA "$work_dir/test.ogv" -ltheoradec -logg
 
-echo "All target codec smoke tests passed."
+check_target_archive() {
+  local archive_name="$1"
+  local required_symbol="$2"
+  local archive="$codec_prefix/lib/$archive_name"
+  local member
+  local object="$work_dir/target-objects/${archive_name%.a}.o"
+
+  test -s "$archive" || {
+    echo "Missing target codec archive: $archive" >&2
+    exit 1
+  }
+
+  "$NM" -g --defined-only "$archive" | grep -Eq "[[:space:]]$required_symbol$" || {
+    echo "Target archive $archive_name does not define $required_symbol" >&2
+    exit 1
+  }
+
+  member="$("$AR" t "$archive" | head -n 1)"
+  test -n "$member" || {
+    echo "Target archive is empty: $archive" >&2
+    exit 1
+  }
+  "$AR" p "$archive" "$member" > "$object"
+  file "$object" | grep -q 'ARM' || {
+    echo "Target archive $archive_name does not contain ARM objects" >&2
+    file "$object" >&2
+    exit 1
+  }
+
+  echo "$archive_name: ARM archive contains $required_symbol"
+}
+
+check_target_archive libmad.a mad_frame_decode
+check_target_archive libmpeg2.a mpeg2_parse
+check_target_archive libtheoradec.a th_decode_packetin
+check_target_archive libogg.a ogg_sync_pageout
+
+echo "Native decoder tests and ARM target archive checks passed."
