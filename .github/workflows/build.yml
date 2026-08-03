@@ -26,7 +26,7 @@ env:
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
   WEBOS_PACKAGE_VERSION: 2026.3.0
-  WEBOS_BUILD_SUFFIX: webos1.1.0
+  WEBOS_BUILD_SUFFIX: webos1.1.1
 
 jobs:
   build:
@@ -51,6 +51,7 @@ jobs:
           bash -n scripts/build-codecs.sh
           bash -n scripts/build-webos.sh
           bash -n scripts/package-webos.sh
+          bash -n tests/test-codecs.sh
 
       - name: Download webOS build tools
         env:
@@ -75,6 +76,11 @@ jobs:
           sudo apt-get install -y \
             autoconf \
             automake \
+            ffmpeg \
+            libmad0-dev \
+            libmpeg2-4-dev \
+            libogg-dev \
+            libtheora-dev \
             libtool \
             pkg-config \
             xz-utils \
@@ -102,6 +108,14 @@ jobs:
           CODEC_SOURCE_DIR="$RUNNER_TEMP/codec-sources" \
             CODEC_PREFIX="$RUNNER_TEMP/webos-codecs" \
             bash scripts/build-codecs.sh
+
+      - name: Decode MP3, MPEG-2 and Theora samples
+        shell: bash
+        run: |
+          source "$RUNNER_TEMP/webos-ndk/environment-setup"
+          CODEC_PREFIX="$RUNNER_TEMP/webos-codecs" \
+            CODEC_TEST_DIR="$RUNNER_TEMP/codec-smoke" \
+            bash tests/test-codecs.sh
 
       - name: Build ScummVM
         shell: bash
@@ -142,7 +156,7 @@ jobs:
             libtheoradec.a; do
             test -s "$RUNNER_TEMP/webos-codecs/lib/$archive"
           done
-          grep -E '^#define (USE_OGG|USE_VORBIS|USE_FLAC|USE_MAD|USE_MPEG2|USE_THEORADEC)' \
+          grep -E '^#define (USE_MT32EMU|USE_OGG|USE_VORBIS|USE_FLAC|USE_MAD|USE_MPEG2|USE_THEORADEC)' \
             build/config.h
           cat dist/*.sha256
 
@@ -225,4 +239,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --title "$GITHUB_REF_NAME" \
-            --notes "ScummVM $WEBOS_PACKAGE_VERSION for rooted LG webOS TVs. Includes statically linked Ogg Vorbis, MP3, FLAC, MPEG-1/2 and Theora support. Built and verified by GitHub Actions from $GITHUB_SHA."
+            --notes "ScummVM $WEBOS_PACKAGE_VERSION for LG webOS TVs in Developer Mode. Includes statically linked Ogg Vorbis, MP3, FLAC, MPEG-1/2 and Theora support. Built and verified by GitHub Actions from $GITHUB_SHA."

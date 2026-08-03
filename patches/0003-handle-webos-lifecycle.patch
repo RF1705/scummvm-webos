@@ -1,0 +1,40 @@
+diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
+--- a/backends/events/sdl/sdl2-events.cpp
++++ b/backends/events/sdl/sdl2-events.cpp
+@@ -716,6 +716,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+ 
+ bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
+ 	switch (ev.type) {
++	case SDL_APP_DIDENTERBACKGROUND:
++		// LG webOS sends SDL application lifecycle events when the native
++		// application is hidden. Persist configuration before the process can
++		// be suspended and stop the audio device while no picture is visible.
++		ConfMan.flushToDisk();
++		SDL_PauseAudio(1);
++		SDL_EnableScreenSaver();
++		event.type = Common::EVENT_FOCUS_LOST;
++		return true;
++
++	case SDL_APP_DIDENTERFOREGROUND:
++		// Resume audio and force a redraw because the webOS compositor may have
++		// discarded the previous surface while the app was in the background.
++		SDL_PauseAudio(0);
++		if (_graphicsManager)
++			_graphicsManager->notifyVideoExpose();
++		if (_engineRunning)
++			SDL_DisableScreenSaver();
++		else
++			SDL_EnableScreenSaver();
++		event.type = Common::EVENT_FOCUS_GAINED;
++		return true;
++
++	case SDL_APP_TERMINATING:
++		// webOS may terminate a suspended application without another window
++		// event. Flush the configuration and let ScummVM leave cleanly.
++		ConfMan.flushToDisk();
++		event.type = Common::EVENT_QUIT;
++		return true;
++
+ 	case SDL_KEYDOWN:
+ 		return handleKeyDown(ev, event);
+ 	case SDL_KEYUP:

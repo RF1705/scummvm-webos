@@ -7,6 +7,7 @@ build_dir="${BUILD_DIR:-$repo_root/build}"
 codec_prefix="${CODEC_PREFIX:-$repo_root/build/codecs}"
 cross_patch="$repo_root/patches/0001-configure-webos-arm-little-endian.patch"
 launch_patch="$repo_root/patches/0002-ignore-webos-launch-parameters.patch"
+lifecycle_patch="$repo_root/patches/0003-handle-webos-lifecycle.patch"
 
 if [[ ! -x "$source_dir/configure" ]]; then
   echo "ScummVM source not found at $source_dir" >&2
@@ -53,6 +54,10 @@ fi
 if ! grep -q "LG webOS passes native lifecycle information" \
   "$source_dir/base/commandLine.cpp"; then
   patch --directory="$source_dir" --strip=1 < "$launch_patch"
+fi
+if ! grep -q "LG webOS sends SDL application lifecycle events" \
+  "$source_dir/backends/events/sdl/sdl2-events.cpp"; then
+  patch --directory="$source_dir" --strip=1 < "$lifecycle_patch"
 fi
 
 engines=(
@@ -205,7 +210,8 @@ for engine_description in "${required_engine_descriptions[@]}"; do
   fi
 done
 
-required_codec_defines=(
+required_feature_defines=(
+  USE_MT32EMU
   USE_OGG
   USE_VORBIS
   USE_FLAC
@@ -214,9 +220,9 @@ required_codec_defines=(
   USE_THEORADEC
 )
 
-for define in "${required_codec_defines[@]}"; do
+for define in "${required_feature_defines[@]}"; do
   if ! grep -Fq "#define $define" "$build_dir/config.h"; then
-    echo "Required codec was not enabled: $define" >&2
+    echo "Required feature was not enabled: $define" >&2
     exit 1
   fi
 done
