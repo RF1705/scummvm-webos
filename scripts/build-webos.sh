@@ -182,7 +182,7 @@ grep -Ein 'twp|thimbleweed|imgui|opengl|shader|png|vorbis|gles' \
   "$build_dir/configure-summary.txt" || true
 
 echo "==== TWP relevant config defines ===="
-grep -E '^#define (USE_IMGUI|USE_OPENGL|USE_OPENGL_GAME|USE_OPENGL_GAME_SHADERS|USE_PNG|USE_VORBIS|USE_GLES2)' \
+grep -E '^#define (USE_IMGUI|USE_OPENGL|USE_OPENGL_SHADERS|USE_PNG|USE_VORBIS|USE_GLES2)' \
   "$build_dir/config.h" || true
 
 echo "==== TWP engine declaration ===="
@@ -230,7 +230,10 @@ required_feature_defines=(
   USE_MAD
   USE_MPEG2
   USE_THEORADEC
-  USE_OPENGL_GAME
+  USE_OPENGL
+  USE_OPENGL_SHADERS
+  USE_IMGUI
+  USE_PNG
 )
 
 for define in "${required_feature_defines[@]}"; do
