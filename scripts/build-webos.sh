@@ -95,6 +95,7 @@ engines=(
   toon
   touche
   tucker
+  twp
   zvision
 )
 
@@ -173,8 +174,8 @@ export LDFLAGS="-L$codec_prefix/lib ${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\
   --disable-sdlnet \
   --disable-enet \
   --disable-discord \
-  --opengl-mode=none \
-  --disable-opengl-game \
+  --opengl-mode=gles2 \
+  --enable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
 enabled_engine_summary="$build_dir/enabled-engines.txt"
@@ -201,6 +202,7 @@ required_engine_descriptions=(
   "Blade Runner"
   "Macromedia Director"
   "Z-Vision"
+  "Thimbleweed Park"
 )
 
 for engine_description in "${required_engine_descriptions[@]}"; do
@@ -218,6 +220,7 @@ required_feature_defines=(
   USE_MAD
   USE_MPEG2
   USE_THEORADEC
+  USE_OPENGL_GAME
 )
 
 for define in "${required_feature_defines[@]}"; do
