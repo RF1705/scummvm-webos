@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="${SCUMMVM_SOURCE_DIR:-$repo_root/upstream}"
 build_dir="${BUILD_DIR:-$repo_root/build}"
+codec_prefix="${CODEC_PREFIX:-$repo_root/build/codecs}"
 cross_patch="$repo_root/patches/0001-configure-webos-arm-little-endian.patch"
 launch_patch="$repo_root/patches/0002-ignore-webos-launch-parameters.patch"
 
@@ -25,6 +26,26 @@ case "$("$CC" -dumpmachine)" in
     exit 1
     ;;
 esac
+
+required_codec_archives=(
+  libogg.a
+  libvorbis.a
+  libvorbisfile.a
+  libFLAC.a
+  libmad.a
+  libmpeg2.a
+  libmpeg2convert.a
+  libtheora.a
+  libtheoradec.a
+)
+
+for archive in "${required_codec_archives[@]}"; do
+  if [[ ! -s "$codec_prefix/lib/$archive" ]]; then
+    echo "Required codec archive not found: $codec_prefix/lib/$archive" >&2
+    echo "Run scripts/build-codecs.sh first." >&2
+    exit 1
+  fi
+done
 
 if ! grep -q "All supported 32-bit LG webOS TV targets" "$source_dir/configure"; then
   patch --directory="$source_dir" --strip=1 < "$cross_patch"
@@ -85,7 +106,7 @@ if (( ${#pkgconfig_dirs[@]} == 0 )); then
   echo "No target pkg-config directories found below $STAGING_DIR" >&2
   exit 1
 fi
-export PKG_CONFIG_LIBDIR="$(IFS=:; echo "${pkgconfig_dirs[*]}")"
+export PKG_CONFIG_LIBDIR="$codec_prefix/lib/pkgconfig:$codec_prefix/share/pkgconfig:$(IFS=:; echo "${pkgconfig_dirs[*]}")"
 unset PKG_CONFIG_PATH
 
 if ! pkg-config --exists sdl2; then
@@ -97,10 +118,11 @@ fi
 echo "Using SDL2 $(pkg-config --modversion sdl2)"
 export PATH="$repo_root/tools:$PATH"
 export SDL_CONFIG=sdl2-config-webos
+export CPPFLAGS="-I$codec_prefix/include ${CPPFLAGS:-}"
 export CXXFLAGS="${CXXFLAGS:-} -Os -ffunction-sections -fdata-sections -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon"
 # The value passes through both make and the shell before reaching the linker:
 # $$ survives make, while the single quotes keep the shell from expanding it.
-export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
+export LDFLAGS="-L$codec_prefix/lib ${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
 
 "$source_dir/configure" \
   --host=arm-webos-linux-gnueabi \
@@ -115,6 +137,21 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --enable-vkeybd \
   --enable-mt32emu \
   --enable-freetype2 \
+  --enable-ogg \
+  --enable-vorbis \
+  --disable-tremor \
+  --enable-flac \
+  --enable-mad \
+  --enable-mpeg2 \
+  --enable-theoradec \
+  --disable-vpx \
+  --disable-faad \
+  --with-ogg-prefix="$codec_prefix" \
+  --with-vorbis-prefix="$codec_prefix" \
+  --with-flac-prefix="$codec_prefix" \
+  --with-mad-prefix="$codec_prefix" \
+  --with-mpeg2-prefix="$codec_prefix" \
+  --with-theoradec-prefix="$codec_prefix" \
   --disable-taskbar \
   --disable-cloud \
   --disable-eventrecorder \
@@ -131,10 +168,6 @@ export LDFLAGS="${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\$\$ORIGIN/lib'"
   --disable-sdlnet \
   --disable-enet \
   --disable-discord \
-  --disable-mpeg2 \
-  --disable-theoradec \
-  --disable-vpx \
-  --disable-faad \
   --opengl-mode=none \
   --disable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
@@ -168,6 +201,22 @@ required_engine_descriptions=(
 for engine_description in "${required_engine_descriptions[@]}"; do
   if ! grep -Fq "$engine_description" "$enabled_engine_summary"; then
     echo "Required engine was not enabled: $engine_description" >&2
+    exit 1
+  fi
+done
+
+required_codec_defines=(
+  USE_OGG
+  USE_VORBIS
+  USE_FLAC
+  USE_MAD
+  USE_MPEG2
+  USE_THEORADEC
+)
+
+for define in "${required_codec_defines[@]}"; do
+  if ! grep -Fq "#define $define" "$build_dir/config.h"; then
+    echo "Required codec was not enabled: $define" >&2
     exit 1
   fi
 done
