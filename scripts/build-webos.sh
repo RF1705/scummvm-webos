@@ -175,7 +175,6 @@ export LDFLAGS="-L$codec_prefix/lib ${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\
   --disable-enet \
   --disable-discord \
   --opengl-mode=gles2 \
-  --enable-opengl-game \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
 
 enabled_engine_summary="$build_dir/enabled-engines.txt"
