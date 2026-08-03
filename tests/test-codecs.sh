@@ -41,28 +41,40 @@ ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i 'testsrc=size=32x32:rate=5:duration=1' \
   -an -pix_fmt yuv420p -c:v libtheora -q:v 4 -f ogg "$work_dir/test.ogv"
 
-"$CC" \
-  -std=c99 -Wall -Wextra -Werror -Os \
-  -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon \
-  -I"$codec_prefix/include" \
-  "$repo_root/tests/codec-smoke.c" \
-  -L"$codec_prefix/lib" \
-  -Wl,--gc-sections \
-  -lmad -lmpeg2 -ltheoradec -logg -lm \
-  -o "$work_dir/codec-smoke"
+common_flags=(
+  -std=c99 -Wall -Wextra -Werror -Os
+  -mcpu=cortex-a9 -mfloat-abi=softfp -mfpu=neon
+  -I"$codec_prefix/include"
+  "$repo_root/tests/codec-smoke.c"
+  -L"$codec_prefix/lib"
+  -Wl,--gc-sections
+)
 
-file "$work_dir/codec-smoke"
+"$CC" "${common_flags[@]}" \
+  -DCODEC_TEST_MP3 \
+  -lmad -lm \
+  -o "$work_dir/codec-smoke-mp3"
+
+"$CC" "${common_flags[@]}" \
+  -DCODEC_TEST_MPEG2 \
+  -lmpeg2 \
+  -o "$work_dir/codec-smoke-mpeg2"
+
+"$CC" "${common_flags[@]}" \
+  -DCODEC_TEST_THEORA \
+  -ltheoradec -logg \
+  -o "$work_dir/codec-smoke-theora"
 
 run_codec_test() {
-  local codec="$1"
+  local binary="$1"
   local sample="$2"
-  echo "Running ARM $codec decoder smoke test under QEMU"
-  "$qemu_arm" -cpu cortex-a9 -L "$STAGING_DIR" \
-    "$work_dir/codec-smoke" "$codec" "$sample"
+  echo "Running ARM $(basename "$binary") under QEMU"
+  file "$binary"
+  "$qemu_arm" -cpu cortex-a9 -L "$STAGING_DIR" "$binary" "$sample"
 }
 
-run_codec_test mp3 "$work_dir/test.mp3"
-run_codec_test mpeg2 "$work_dir/test.m2v"
-run_codec_test theora "$work_dir/test.ogv"
+run_codec_test "$work_dir/codec-smoke-mp3" "$work_dir/test.mp3"
+run_codec_test "$work_dir/codec-smoke-mpeg2" "$work_dir/test.m2v"
+run_codec_test "$work_dir/codec-smoke-theora" "$work_dir/test.ogv"
 
 echo "All target codec smoke tests passed."
