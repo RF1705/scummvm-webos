@@ -1,7 +1,7 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -716,6 +716,37 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +716,38 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
 +	static PauseToken *webosPauseToken = nullptr;
