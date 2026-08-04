@@ -1,7 +1,7 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -169,2 +169,11 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+@@ -169,2 +169,12 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
  	switch (key) {
 +	// LG webOS remote keys observed on TV hardware. Expose them as function
 +	// keys so they become assignable in ScummVM's keymapper.
@@ -11,9 +11,10 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 +	case static_cast<SDL_Keycode>(0x200014): return Common::KEYCODE_F16; // blue
 +	case static_cast<SDL_Keycode>(0x200021): return Common::KEYCODE_F17; // channel up
 +	case static_cast<SDL_Keycode>(0x200022): return Common::KEYCODE_F18; // channel down
++	case static_cast<SDL_Keycode>(0x1cd): return Common::KEYCODE_ESCAPE; // back
 +
  	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
-@@ -716,6 +725,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +726,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
 +	if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
