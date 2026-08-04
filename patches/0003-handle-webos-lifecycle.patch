@@ -1,21 +1,17 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -169,2 +169,13 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+@@ -169,2 +169,9 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
  	switch (key) {
-+	// LG webOS colour keys. SDL 2 has no named keycodes for these TV
-+	// buttons, so expose them as F13-F16 for ScummVM's keymapper.
-+	case static_cast<SDL_Keycode>(0x18e):
-+	case static_cast<SDL_Keycode>(0x1008ffa3): return Common::KEYCODE_F13;
-+	case static_cast<SDL_Keycode>(0x18f):
-+	case static_cast<SDL_Keycode>(0x1008ffa4): return Common::KEYCODE_F14;
-+	case static_cast<SDL_Keycode>(0x190):
-+	case static_cast<SDL_Keycode>(0x1008ffa5): return Common::KEYCODE_F15;
-+	case static_cast<SDL_Keycode>(0x191):
-+	case static_cast<SDL_Keycode>(0x1008ffa6): return Common::KEYCODE_F16;
++	// LG webOS colour keys observed on TV hardware. Expose them as F13-F16
++	// so they become assignable in ScummVM's keymapper.
++	case static_cast<SDL_Keycode>(0x200011): return Common::KEYCODE_F13; // red
++	case static_cast<SDL_Keycode>(0x200012): return Common::KEYCODE_F14; // green
++	case static_cast<SDL_Keycode>(0x200013): return Common::KEYCODE_F15; // yellow
++	case static_cast<SDL_Keycode>(0x200014): return Common::KEYCODE_F16; // blue
 +
  	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
-@@ -716,6 +727,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +723,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
 +	if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
