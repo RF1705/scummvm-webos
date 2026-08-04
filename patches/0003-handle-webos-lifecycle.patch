@@ -1,7 +1,7 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -169,6 +169,18 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+@@ -190,6 +190,19 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
  	switch (key) {
 +	// LG webOS colour keys. Depending on the SDL/webOS input path these are
 +	// delivered either as Linux input key codes or as XF86 keysyms. SDL 2 has
@@ -19,7 +19,8 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
  	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
  	case SDLK_TAB: return Common::KEYCODE_TAB;
  	case SDLK_CLEAR: return Common::KEYCODE_CLEAR;
-@@ -716,6 +728,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+ 	case SDLK_RETURN: return Common::KEYCODE_RETURN;
+@@ -716,6 +729,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
  	switch (ev.type) {
@@ -59,7 +60,7 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
 --- a/backends/graphics/sdl/sdl-graphics.cpp
 +++ b/backends/graphics/sdl/sdl-graphics.cpp
-@@ -258,6 +258,15 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
+@@ -318,6 +318,17 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
  }
  
  void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
