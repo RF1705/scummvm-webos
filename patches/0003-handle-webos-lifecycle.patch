@@ -1,7 +1,21 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -716,6 +716,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -169,3 +169,14 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+ 	switch (key) {
++	// LG webOS colour keys. SDL 2 has no named keycodes for these TV
++	// buttons, so expose them as F13-F16 for ScummVM's keymapper.
++	case static_cast<SDL_Keycode>(0x18e):
++	case static_cast<SDL_Keycode>(0x1008ffa3): return Common::KEYCODE_F13;
++	case static_cast<SDL_Keycode>(0x18f):
++	case static_cast<SDL_Keycode>(0x1008ffa4): return Common::KEYCODE_F14;
++	case static_cast<SDL_Keycode>(0x190):
++	case static_cast<SDL_Keycode>(0x1008ffa5): return Common::KEYCODE_F15;
++	case static_cast<SDL_Keycode>(0x191):
++	case static_cast<SDL_Keycode>(0x1008ffa6): return Common::KEYCODE_F16;
++
+ 	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
+@@ -716,6 +727,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
  	switch (ev.type) {
@@ -38,3 +52,18 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
  	case SDL_KEYDOWN:
  		return handleKeyDown(ev, event);
  	case SDL_KEYUP:
+diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
+--- a/backends/graphics/sdl/sdl-graphics.cpp
++++ b/backends/graphics/sdl/sdl-graphics.cpp
+@@ -258,3 +258,10 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
+ }
+ 
+ void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
++	// The LG Magic Remote supplies absolute pointer coordinates. TWP may
++	// request cursor warps for controller navigation; on webOS these can be
++	// fed back as real pointer events and pull the cursor to the top-left.
++	// Keep the physical Magic Remote position authoritative for TWP.
++	if (ConfMan.hasKey("engineid") && ConfMan.get("engineid") == "twp")
++		return;
++
+ 	assert(_window);
