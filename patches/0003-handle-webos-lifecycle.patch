@@ -65,17 +65,14 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
 --- a/backends/graphics/sdl/sdl-graphics.cpp
 +++ b/backends/graphics/sdl/sdl-graphics.cpp
-@@ -258,4 +258,13 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
+@@ -258,4 +258,11 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
  }
  
  void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
-+	// The LG Magic Remote supplies absolute pointer coordinates. TWP may
-+	// request cursor warps for controller navigation; on webOS these can be
-+	// fed back as real pointer events and pull the cursor to the top-left.
-+	// Keep the physical Magic Remote position authoritative for TWP.
-+	if (ConfMan.hasKey("engineid") && ConfMan.get("engineid") == "twp") {
-+		warning("WEBOS_INPUT suppressed TWP mouse warp x=%d y=%d", x, y);
-+		return;
-+	}
++	// The LG Magic Remote supplies absolute pointer coordinates. Cursor warps
++	// are fed back by webOS as real motion events and corrupt that absolute
++	// stream, so never warp the physical cursor in this dedicated webOS build.
++	warning("WEBOS_INPUT suppressed mouse warp x=%d y=%d", x, y);
++	return;
 +
  	assert(_window);
