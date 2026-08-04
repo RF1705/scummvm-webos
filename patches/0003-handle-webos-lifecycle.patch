@@ -1,26 +1,7 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -190,6 +190,19 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
- 	switch (key) {
-+	// LG webOS colour keys. Depending on the SDL/webOS input path these are
-+	// delivered either as Linux input key codes or as XF86 keysyms. SDL 2 has
-+	// no named keycodes for them, so expose them as F13-F16. This makes all
-+	// four buttons visible and assignable in ScummVM's keymapper.
-+	case static_cast<SDL_Keycode>(0x18e):
-+	case static_cast<SDL_Keycode>(0x1008ffa3): return Common::KEYCODE_F13;
-+	case static_cast<SDL_Keycode>(0x18f):
-+	case static_cast<SDL_Keycode>(0x1008ffa4): return Common::KEYCODE_F14;
-+	case static_cast<SDL_Keycode>(0x190):
-+	case static_cast<SDL_Keycode>(0x1008ffa5): return Common::KEYCODE_F15;
-+	case static_cast<SDL_Keycode>(0x191):
-+	case static_cast<SDL_Keycode>(0x1008ffa6): return Common::KEYCODE_F16;
-+
- 	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
- 	case SDLK_TAB: return Common::KEYCODE_TAB;
- 	case SDLK_CLEAR: return Common::KEYCODE_CLEAR;
- 	case SDLK_RETURN: return Common::KEYCODE_RETURN;
-@@ -716,6 +729,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +716,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
  	switch (ev.type) {
@@ -57,24 +38,3 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
  	case SDL_KEYDOWN:
  		return handleKeyDown(ev, event);
  	case SDL_KEYUP:
-diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
---- a/backends/graphics/sdl/sdl-graphics.cpp
-+++ b/backends/graphics/sdl/sdl-graphics.cpp
-@@ -318,6 +318,17 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
- }
- 
- void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
-+	// The LG Magic Remote supplies absolute pointer coordinates through the
-+	// webOS compositor. Thimbleweed Park also tries to warp the system cursor
-+	// while navigating its controller-oriented UI. On webOS that warp is fed
-+	// back as a real pointer event and repeatedly pulls the cursor to (0, 0).
-+	// Keep the physical Magic Remote position authoritative for TWP.
-+	if (ConfMan.hasKey("engineid") && ConfMan.get("engineid") == "twp") {
-+		(void)x;
-+		(void)y;
-+		return;
-+	}
-+
- 	assert(_window);
- 	if (!_window->warpMouseInWindow(x, y)) {
- 		const Common::Point mouse = convertWindowToVirtual(x, y);
