@@ -1,7 +1,7 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -169,3 +169,14 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+@@ -169,2 +169,13 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
  	switch (key) {
 +	// LG webOS colour keys. SDL 2 has no named keycodes for these TV
 +	// buttons, so expose them as F13-F16 for ScummVM's keymapper.
@@ -55,7 +55,7 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
 --- a/backends/graphics/sdl/sdl-graphics.cpp
 +++ b/backends/graphics/sdl/sdl-graphics.cpp
-@@ -258,3 +258,10 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
+@@ -258,4 +258,11 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
  }
  
  void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
