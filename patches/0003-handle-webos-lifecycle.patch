@@ -62,16 +62,3 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
  	case SDL_KEYDOWN:
  		return handleKeyDown(ev, event);
  	case SDL_KEYUP:
-diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
---- a/backends/graphics/sdl/sdl-graphics.cpp
-+++ b/backends/graphics/sdl/sdl-graphics.cpp
-@@ -258,4 +258,10 @@ void SdlGraphicsManager::showSystemMouseCursor(bool visible) {
- }
- 
- void SdlGraphicsManager::setSystemMousePosition(const int x, const int y) {
-+	// The LG Magic Remote supplies absolute pointer coordinates. Cursor warps
-+	// are fed back by webOS as real motion events and corrupt that stream.
-+	warning("WEBOS_INPUT suppressed mouse warp x=%d y=%d", x, y);
-+	return;
-+
- 	assert(_window);
