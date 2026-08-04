@@ -10,5 +10,6 @@
   "iconColor": "#1b2138",
   "noSplashOnLaunch": true,
   "useAllMouseButtons": true,
-  "useAllKeyboardKeys": true
+  "useAllKeyboardKeys": true,
+  "disableBackHistoryAPI": true
 }
