@@ -1,7 +1,25 @@
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
-@@ -716,6 +716,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -169,6 +169,18 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
+ 	switch (key) {
++	// LG webOS colour keys. Depending on the SDL/webOS input path these are
++	// delivered either as Linux input key codes or as XF86 keysyms. SDL 2 has
++	// no named keycodes for them, so expose them as F13-F16. This makes all
++	// four buttons visible and assignable in ScummVM's keymapper.
++	case static_cast<SDL_Keycode>(0x18e):
++	case static_cast<SDL_Keycode>(0x1008ffa3): return Common::KEYCODE_F13;
++	case static_cast<SDL_Keycode>(0x18f):
++	case static_cast<SDL_Keycode>(0x1008ffa4): return Common::KEYCODE_F14;
++	case static_cast<SDL_Keycode>(0x190):
++	case static_cast<SDL_Keycode>(0x1008ffa5): return Common::KEYCODE_F15;
++	case static_cast<SDL_Keycode>(0x191):
++	case static_cast<SDL_Keycode>(0x1008ffa6): return Common::KEYCODE_F16;
++
+ 	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
+ 	case SDLK_TAB: return Common::KEYCODE_TAB;
+ 	case SDLK_CLEAR: return Common::KEYCODE_CLEAR;
+@@ -716,6 +728,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
  	switch (ev.type) {
@@ -38,24 +56,6 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
  	case SDL_KEYDOWN:
  		return handleKeyDown(ev, event);
  	case SDL_KEYUP:
-@@ -169,6 +199,18 @@ Common::KeyCode SdlEventSource::SDLToOSystemKeycode(const SDL_Keycode key) {
- 	switch (key) {
-+	// LG webOS colour keys. Depending on the SDL/webOS input path these are
-+	// delivered either as Linux input key codes or as XF86 keysyms. SDL 2 has
-+	// no named keycodes for them, so expose them as F13-F16. This makes all
-+	// four buttons visible and assignable in ScummVM's keymapper.
-+	case static_cast<SDL_Keycode>(0x18e):
-+	case static_cast<SDL_Keycode>(0x1008ffa3): return Common::KEYCODE_F13;
-+	case static_cast<SDL_Keycode>(0x18f):
-+	case static_cast<SDL_Keycode>(0x1008ffa4): return Common::KEYCODE_F14;
-+	case static_cast<SDL_Keycode>(0x190):
-+	case static_cast<SDL_Keycode>(0x1008ffa5): return Common::KEYCODE_F15;
-+	case static_cast<SDL_Keycode>(0x191):
-+	case static_cast<SDL_Keycode>(0x1008ffa6): return Common::KEYCODE_F16;
-+
- 	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
- 	case SDLK_TAB: return Common::KEYCODE_TAB;
- 	case SDLK_CLEAR: return Common::KEYCODE_CLEAR;
 diff --git a/backends/graphics/sdl/sdl-graphics.cpp b/backends/graphics/sdl/sdl-graphics.cpp
 --- a/backends/graphics/sdl/sdl-graphics.cpp
 +++ b/backends/graphics/sdl/sdl-graphics.cpp
