@@ -14,12 +14,19 @@
   let downloadUrl = null;
 
   const cleanTarget = value => value.trim();
-  const appIdFor = target => `org.scummvm.launcher.${target.toLowerCase().replace(/_/g, "-")}`;
+  const appIdFor = target => {
+    const suffix = target
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return suffix ? `org.scummvm.launcher.${suffix}` : "";
+  };
   const normalizeTarName = name => name.replace(/^\.\//, "").replace(/^\//, "");
 
   targetInput.addEventListener("input", () => {
     const target = cleanTarget(targetInput.value);
-    appIdOutput.value = target ? appIdFor(target) : "org.scummvm.launcher.…";
+    const appId = target ? appIdFor(target) : "";
+    appIdOutput.value = appId || "org.scummvm.launcher.…";
   });
 
   window.addEventListener("beforeunload", () => {
@@ -190,17 +197,31 @@
     return { appInfo, root };
   }
 
-  function renameAppRoot(entries, oldRoot, oldId, newId) {
-    if (!oldRoot) return oldRoot;
-    const newRoot = oldRoot.includes(oldId) ? oldRoot.replace(oldId, newId) : oldRoot;
-    if (newRoot === oldRoot) return oldRoot;
-
+  function renamePackagePaths(entries, oldId, newId) {
     for (const entry of entries) {
-      if (entry.name === oldRoot || entry.name.startsWith(`${oldRoot}/`)) {
-        entry.name = `${newRoot}${entry.name.slice(oldRoot.length)}`;
+      if (entry.name.includes(oldId)) {
+        entry.name = entry.name.split(oldId).join(newId);
       }
     }
-    return newRoot;
+  }
+
+  function patchPackageInfo(entries, packageId) {
+    const entry = entries.find(item =>
+      normalizeTarName(item.name).endsWith("/packageinfo.json")
+    );
+    if (!entry) throw new Error("packageinfo.json fehlt im Template");
+
+    let packageInfo;
+    try {
+      packageInfo = JSON.parse(decoder.decode(entry.data));
+    } catch {
+      throw new Error("packageinfo.json im Template ist ungültig");
+    }
+
+    packageInfo.id = packageId;
+    packageInfo.app = packageId;
+    packageInfo.version = "1.0.0";
+    entry.data = encoder.encode(`${JSON.stringify(packageInfo, null, 2)}\n`);
   }
 
   function appPath(root, filename) {
@@ -285,9 +306,12 @@
       const target = cleanTarget(targetInput.value);
       const title = titleInput.value.trim();
       const icon = iconInput.files[0];
-      if (!/^[A-Za-z0-9_-]+$/.test(target)) throw new Error("Ungültige Target-ID");
+      if (!/^[A-Za-z0-9_:-]+$/.test(target)) throw new Error("Ungültige Target-ID");
       if (!title) throw new Error("Ein Titel ist erforderlich");
       if (!icon) throw new Error("Ein Icon ist erforderlich");
+
+      const packageId = appIdFor(target);
+      if (!packageId) throw new Error("Aus der Target-ID konnte keine App-ID erzeugt werden");
 
       status.textContent = "Template wird geladen …";
       const templateResponse = await fetch("template.ipk", { cache: "no-store" });
@@ -302,9 +326,12 @@
       const { gunzipSync, gzipSync } = window.fflate;
       const dataEntries = parseTar(gunzipSync(dataArchive.data));
       const controlEntries = parseTar(gunzipSync(controlArchive.data));
-      const packageId = appIdFor(target);
       const template = locateTemplateApp(dataEntries);
-      const appRoot = renameAppRoot(dataEntries, template.root, template.appInfo.id, packageId);
+      const templateId = template.appInfo.id;
+      renamePackagePaths(dataEntries, templateId, packageId);
+      const appRoot = template.root
+        ? template.root.split(templateId).join(packageId)
+        : "";
 
       const appInfo = {
         ...template.appInfo,
@@ -332,6 +359,7 @@
         encoder.encode(`(function(){"use strict";var b=new PalmServiceBridge();b.onservicecallback=function(){window.close();};b.call("luna://com.webos.applicationManager/launch",JSON.stringify({id:"org.scummvm.scummvm",params:{target:${JSON.stringify(target)}}}));setTimeout(function(){window.close();},3000);}());\n`)
       );
       replaceTarEntry(dataEntries, appPath(appRoot, "icon.png"), await iconPng(icon));
+      patchPackageInfo(dataEntries, packageId);
 
       const control = findTarEntry(controlEntries, "control");
       if (!control) throw new Error("control-Datei fehlt im Template");
