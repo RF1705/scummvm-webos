@@ -14,19 +14,9 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 +	case static_cast<SDL_Keycode>(0x1cd): return Common::KEYCODE_ESCAPE; // back
 +
  	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
-@@ -716,6 +726,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +726,36 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
-+	if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
-+		warning("WEBOS_INPUT key type=%u sym=0x%x scancode=%d repeat=%d",
-+		        ev.type, (unsigned int)ev.key.keysym.sym,
-+		        (int)ev.key.keysym.scancode, (int)ev.key.repeat);
-+	} else if (ev.type == SDL_MOUSEMOTION) {
-+		warning("WEBOS_INPUT mouse x=%d y=%d xrel=%d yrel=%d which=%u",
-+		        ev.motion.x, ev.motion.y, ev.motion.xrel, ev.motion.yrel,
-+		        (unsigned int)ev.motion.which);
-+	}
-+
  	switch (ev.type) {
 +	case SDL_APP_DIDENTERBACKGROUND:
 +		// LG webOS sends SDL application lifecycle events when the native
