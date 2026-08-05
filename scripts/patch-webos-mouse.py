@@ -12,20 +12,9 @@ text = path.read_text(encoding="utf-8")
 marker = "WEBOS_RESET_TWP_MOUSE_STATE"
 
 if marker not in text:
-    old = (
-        "\t} else if (ev.type == SDL_MOUSEMOTION) {\n"
-        "\t\twarning(\"WEBOS_INPUT mouse x=%d y=%d xrel=%d yrel=%d which=%u\",\n"
-        "\t\t        ev.motion.x, ev.motion.y, ev.motion.xrel, ev.motion.yrel,\n"
-        "\t\t        (unsigned int)ev.motion.which);\n"
-        "\t}\n"
-    )
-
+    old = "\tcase SDL_MOUSEMOTION:\n\t\treturn handleMouseMotion(ev, event);\n"
     new = (
-        "\t} else if (ev.type == SDL_MOUSEMOTION) {\n"
-        "\t\twarning(\"WEBOS_INPUT mouse x=%d y=%d xrel=%d yrel=%d which=%u\",\n"
-        "\t\t        ev.motion.x, ev.motion.y, ev.motion.xrel, ev.motion.yrel,\n"
-        "\t\t        (unsigned int)ev.motion.which);\n"
-        "\n"
+        "\tcase SDL_MOUSEMOTION: {\n"
         "\t\t// WEBOS_RESET_TWP_MOUSE_STATE: TWP can enter gameplay with SDL still\n"
         "\t\t// in a grabbed/relative mouse state. Reset it before processing the\n"
         "\t\t// first Magic Remote motion event, mirroring the state produced after\n"
@@ -39,9 +28,9 @@ if marker not in text:
         "\t\t\t\tSDL_SetWindowGrab(window, SDL_FALSE);\n"
         "\t\t\tSDL_FlushEvent(SDL_MOUSEMOTION);\n"
         "\t\t\ttwpMouseStateReset = true;\n"
-        "\t\t\twarning(\"WEBOS_INPUT reset TWP SDL mouse state\");\n"
         "\t\t\treturn false;\n"
         "\t\t}\n"
+        "\t\treturn handleMouseMotion(ev, event);\n"
         "\t}\n"
     )
 
