@@ -58,6 +58,10 @@
     while (offset + 60 <= bytes.length) {
       const header = decoder.decode(bytes.slice(offset, offset + 60));
       const name = header.slice(0, 16).trim().replace(/\/$/, "");
+      const date = header.slice(16, 28).trim();
+      const uid = header.slice(28, 34).trim();
+      const gid = header.slice(34, 40).trim();
+      const mode = header.slice(40, 48).trim();
       const size = Number.parseInt(header.slice(48, 58).trim(), 10);
       const start = offset + 60;
       const end = start + size;
@@ -66,7 +70,14 @@
         throw new Error("Beschädigtes IPK-Archiv");
       }
 
-      entries.push({ name, data: bytes.slice(start, end) });
+      entries.push({
+        name,
+        date,
+        uid,
+        gid,
+        mode,
+        data: bytes.slice(start, end)
+      });
       offset = end + (size % 2);
     }
     return entries;
@@ -76,11 +87,11 @@
     const parts = [encoder.encode("!<arch>\n")];
     for (const entry of entries) {
       const fields = [
-        `${entry.name}/`.padEnd(16),
-        "0".padEnd(12),
-        "0".padEnd(6),
-        "0".padEnd(6),
-        "100644".padEnd(8),
+        entry.name.padEnd(16),
+        (entry.date || String(Math.floor(Date.now() / 1000))).padEnd(12),
+        (entry.uid || "0").padEnd(6),
+        (entry.gid || "0").padEnd(6),
+        (entry.mode || "100644").padEnd(8),
         String(entry.data.length).padEnd(10),
         "`\n"
       ];
