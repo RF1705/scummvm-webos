@@ -1,0 +1,13 @@
+diff --git a/engines/twp/twp.h b/engines/twp/twp.h
+--- a/engines/twp/twp.h
++++ b/engines/twp/twp.h
+@@ -96,7 +96,8 @@ public:
+ 		return (f == kSupportsLoadingDuringRuntime) ||
+ 			   (f == kSupportsSavingDuringRuntime) ||
+ 			   (f == kSupportsReturnToLauncher) ||
+-			   (f == kSupportsChangingOptionsDuringRuntime);
++			   (f == kSupportsChangingOptionsDuringRuntime) ||
++			   (f == kSupportsSubtitleOptions);
+ 	}
+ 
+ 	void updateSettingVars();

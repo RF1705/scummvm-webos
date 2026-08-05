@@ -8,6 +8,7 @@ codec_prefix="${CODEC_PREFIX:-$repo_root/build/codecs}"
 cross_patch="$repo_root/patches/0001-configure-webos-arm-little-endian.patch"
 launch_patch="$repo_root/patches/0002-ignore-webos-launch-parameters.patch"
 lifecycle_patch="$repo_root/patches/0003-handle-webos-lifecycle.patch"
+mouse_patcher="$repo_root/scripts/patch-webos-mouse.py"
 
 if [[ ! -x "$source_dir/configure" ]]; then
   echo "ScummVM source not found at $source_dir" >&2
@@ -59,6 +60,7 @@ if ! grep -q "LG webOS sends SDL application lifecycle events" \
   "$source_dir/backends/events/sdl/sdl2-events.cpp"; then
   patch --directory="$source_dir" --strip=1 < "$lifecycle_patch"
 fi
+python3 "$mouse_patcher" "$source_dir"
 
 engines=(
   agi
@@ -95,6 +97,7 @@ engines=(
   toon
   touche
   tucker
+  twp
   zvision
 )
 
@@ -173,9 +176,19 @@ export LDFLAGS="-L$codec_prefix/lib ${LDFLAGS:-} -Wl,--gc-sections -Wl,-rpath,'\
   --disable-sdlnet \
   --disable-enet \
   --disable-discord \
-  --opengl-mode=none \
-  --disable-opengl-game \
+  --opengl-mode=gles2 \
   --disable-tinygl | tee "$build_dir/configure-summary.txt"
+
+echo "==== TWP configure diagnostics ===="
+grep -Ein 'twp|thimbleweed|imgui|opengl|shader|png|vorbis|gles' \
+  "$build_dir/configure-summary.txt" || true
+
+echo "==== TWP relevant config defines ===="
+grep -E '^#define (USE_IMGUI|USE_OPENGL|USE_OPENGL_SHADERS|USE_PNG|USE_VORBIS|USE_GLES2)' \
+  "$build_dir/config.h" || true
+
+echo "==== TWP engine declaration ===="
+cat "$source_dir/engines/twp/configure.engine" || true
 
 enabled_engine_summary="$build_dir/enabled-engines.txt"
 awk '
@@ -201,6 +214,7 @@ required_engine_descriptions=(
   "Blade Runner"
   "Macromedia Director"
   "Z-Vision"
+  "Thimbleweed Park"
 )
 
 for engine_description in "${required_engine_descriptions[@]}"; do
@@ -218,6 +232,10 @@ required_feature_defines=(
   USE_MAD
   USE_MPEG2
   USE_THEORADEC
+  USE_OPENGL
+  USE_OPENGL_SHADERS
+  USE_IMGUI
+  USE_PNG
 )
 
 for define in "${required_feature_defines[@]}"; do
