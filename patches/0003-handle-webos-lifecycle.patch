@@ -14,7 +14,7 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 +	case static_cast<SDL_Keycode>(0x1cd): return Common::KEYCODE_ESCAPE; // back
 +
  	case SDLK_BACKSPACE: return Common::KEYCODE_BACKSPACE;
-@@ -716,6 +726,56 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -716,6 +726,46 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  
  bool SdlEventSource::dispatchSDLEvent(SDL_Event &ev, Common::Event &event) {
 +	if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP) {
@@ -25,16 +25,6 @@ diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-even
 +		warning("WEBOS_INPUT mouse x=%d y=%d xrel=%d yrel=%d which=%u",
 +		        ev.motion.x, ev.motion.y, ev.motion.xrel, ev.motion.yrel,
 +		        (unsigned int)ev.motion.which);
-+
-+		// TWP repeatedly generates synthetic warp feedback through SDL/webOS.
-+		// These events jump to the top-left with a very large negative delta
-+		// and are interleaved with the real absolute Magic Remote events.
-+		if (ev.motion.x == 0 && ev.motion.y == 0 &&
-+		        (ev.motion.xrel < -200 || ev.motion.xrel > 200 ||
-+		         ev.motion.yrel < -120 || ev.motion.yrel > 120)) {
-+			warning("WEBOS_INPUT dropped synthetic mouse warp");
-+			return false;
-+		}
 +	}
 +
  	switch (ev.type) {
