@@ -42,6 +42,35 @@ if marker not in text:
 else:
     print(f"already patched: {path}")
 
+# SDL-webOS exposes the physical LG Back button through its dedicated scancode.
+# Convert it to Escape at ScummVM's common SDL keycode boundary so both key-down
+# and key-up events use the normal ScummVM back/cancel path in every engine.
+path = source_dir / "backends/events/sdl/sdl2-events.cpp"
+text = path.read_text(encoding="utf-8")
+marker = "WEBOS_BACK_TO_ESCAPE"
+
+if marker not in text:
+    old = (
+        "SDL_Keycode SdlEventSource::obtainKeycode(const SDL_Keysym keySym) {\n"
+        "\treturn keySym.sym;\n"
+        "}\n"
+    )
+    new = (
+        "SDL_Keycode SdlEventSource::obtainKeycode(const SDL_Keysym keySym) {\n"
+        "\t// WEBOS_BACK_TO_ESCAPE: SDL-webOS delivers the LG Back button as a\n"
+        "\t// dedicated scancode. Treat it like Escape throughout ScummVM.\n"
+        "\tif (keySym.scancode == SDL_SCANCODE_WEBOS_BACK)\n"
+        "\t\treturn SDLK_ESCAPE;\n"
+        "\treturn keySym.sym;\n"
+        "}\n"
+    )
+    if old not in text:
+        raise SystemExit(f"Back key anchor not found in {path}")
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")
+    print(f"patched: {path}")
+else:
+    print(f"already patched: {path}")
+
 # Keep this change identical to patches/0004-twp-enable-subtitle-options.patch
 # so it can be submitted independently to upstream ScummVM.
 path = source_dir / "engines/twp/twp.h"
