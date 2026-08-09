@@ -57,9 +57,10 @@ if marker not in text:
     )
     new = (
         "SDL_Keycode SdlEventSource::obtainKeycode(const SDL_Keysym keySym) {\n"
-        "\t// WEBOS_BACK_TO_ESCAPE: SDL-webOS delivers the LG Back button as a\n"
-        "\t// dedicated scancode. Treat it like Escape throughout ScummVM.\n"
-        "\tif (keySym.scancode == SDL_SCANCODE_WEBOS_BACK)\n"
+        "\t// WEBOS_BACK_TO_ESCAPE: SDL-webOS assigns scancode 482 to the native\n"
+        "\t// LG Back button. Use the numeric value to avoid depending on the\n"
+        "\t// SDL-webOS-specific enum name in the SDK headers used for this build.\n"
+        "\tif (static_cast<int>(keySym.scancode) == 482)\n"
         "\t\treturn SDLK_ESCAPE;\n"
         "\treturn keySym.sym;\n"
         "}\n"
