@@ -1,0 +1,22 @@
+--- a/gui/launcher.cpp
++++ b/gui/launcher.cpp
+@@ -641,6 +641,19 @@ Common::Array<LauncherEntry> LauncherDialog::generateEntries(const Common::ConfigManager::DomainMap &domains, bool skipAddOns) {
+ }
+ 
+ void LauncherDialog::handleKeyDown(Common::KeyState state) {
++	// LG webOS confirms Back/Escape in the launcher using ScummVM's existing
++	// confirm_exit preference and the same translated quit dialog used in-game.
++	if (state.keycode == Common::KEYCODE_ESCAPE && ConfMan.getBool("confirm_exit")) {
++		MessageDialog alert(_("Do you really want to quit?\nAny unsaved progress will be lost."),
++			_("Quit"), _("Cancel"));
++		if (alert.runModal() == kMessageOK) {
++			ConfMan.setActiveDomain("");
++			setResult(-1);
++			close();
++		}
++		return;
++	}
++
+ 	Dialog::handleKeyDown(state);
+ }
+ 
