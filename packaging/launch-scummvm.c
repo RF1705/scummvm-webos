@@ -188,6 +188,10 @@ int main(int argc, char **argv) {
 		perror("setenv");
 		return 1;
 	}
+	if (setenv("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true", 1) < 0) {
+		perror("setenv SDL_WEBOS_ACCESS_POLICY_KEYS_BACK");
+		return 1;
+	}
 	char gui_language[3];
 	set_webos_locale(gui_language);
 	ensure_gui_language(gui_language);
