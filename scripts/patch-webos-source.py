@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 if len(sys.argv) != 2:
-    raise SystemExit("usage: patch-webos-mouse.py <scummvm-source-dir>")
+    raise SystemExit("usage: patch-webos-source.py <scummvm-source-dir>")
 
 source_dir = Path(sys.argv[1])
 
@@ -224,6 +224,50 @@ if feature not in text:
     )
     if old not in text:
         raise SystemExit(f"TWP subtitle feature anchor not found in {path}")
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")
+    print(f"patched: {path}")
+else:
+    print(f"already patched: {path}")
+
+
+# Log the actual SDL desktop, window and OpenGL drawable sizes on webOS.
+# This is diagnostic-only and intentionally does not alter fullscreen behavior.
+path = source_dir / "backends/platform/sdl/sdl-window.cpp"
+text = path.read_text(encoding="utf-8")
+marker = "WEBOS_RESOLUTION_DIAGNOSTICS"
+
+if marker not in text:
+    old = (
+        "\t_lastFlags = flags;\n"
+        "\n"
+        "\treturn true;\n"
+    )
+    new = (
+        "\t// WEBOS_RESOLUTION_DIAGNOSTICS: webOS may report a desktop mode that\n"
+        "\t// differs from the logical SDL window or GLES drawable size. Log all\n"
+        "\t// three so fullscreen scaling issues can be diagnosed on real TVs.\n"
+        "\tSDL_DisplayMode webosDisplayMode;\n"
+        "\tint webosWindowWidth = 0, webosWindowHeight = 0;\n"
+        "\tint webosDrawableWidth = 0, webosDrawableHeight = 0;\n"
+        "\tSDL_GetWindowSize(_window, &webosWindowWidth, &webosWindowHeight);\n"
+        "\tSDL_GL_GetDrawableSize(_window, &webosDrawableWidth, &webosDrawableHeight);\n"
+        "\tif (SDL_GetDesktopDisplayMode(getDisplayIndex(), &webosDisplayMode) == 0) {\n"
+        "\t\twarning(\"WEBOS_RESOLUTION desktop=%dx%d window=%dx%d drawable=%dx%d flags=0x%x\",\n"
+        "\t\t        webosDisplayMode.w, webosDisplayMode.h,\n"
+        "\t\t        webosWindowWidth, webosWindowHeight,\n"
+        "\t\t        webosDrawableWidth, webosDrawableHeight, flags);\n"
+        "\t} else {\n"
+        "\t\twarning(\"WEBOS_RESOLUTION desktop=unknown window=%dx%d drawable=%dx%d flags=0x%x error=%s\",\n"
+        "\t\t        webosWindowWidth, webosWindowHeight,\n"
+        "\t\t        webosDrawableWidth, webosDrawableHeight, flags, SDL_GetError());\n"
+        "\t}\n"
+        "\n"
+        "\t_lastFlags = flags;\n"
+        "\n"
+        "\treturn true;\n"
+    )
+    if old not in text:
+        raise SystemExit(f"resolution diagnostics anchor not found in {path}")
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
     print(f"patched: {path}")
 else:

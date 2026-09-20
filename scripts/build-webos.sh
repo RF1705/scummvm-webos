@@ -9,7 +9,7 @@ cross_patch="$repo_root/patches/0001-configure-webos-arm-little-endian.patch"
 launch_patch="$repo_root/patches/0002-ignore-webos-launch-parameters.patch"
 lifecycle_patch="$repo_root/patches/0003-handle-webos-lifecycle.patch"
 launcher_exit_patch="$repo_root/patches/0005-confirm-webos-launcher-exit.patch"
-mouse_patcher="$repo_root/scripts/patch-webos-mouse.py"
+source_patcher="$repo_root/scripts/patch-webos-source.py"
 
 if [[ ! -x "$source_dir/configure" ]]; then
   echo "ScummVM source not found at $source_dir" >&2
@@ -65,7 +65,7 @@ if ! grep -q "LG webOS confirms Back/Escape in the launcher" \
   "$source_dir/gui/launcher.cpp"; then
   patch --directory="$source_dir" --strip=1 < "$launcher_exit_patch"
 fi
-python3 "$mouse_patcher" "$source_dir"
+python3 "$source_patcher" "$source_dir"
 
 engines=(
   agi
