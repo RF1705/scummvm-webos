@@ -83,7 +83,6 @@ engines=(
   lure
   made
   mads
-  madsv2
   mohawk
   myst
   riven
