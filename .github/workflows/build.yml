@@ -12,7 +12,7 @@ on:
       scummvm_ref:
         description: Official ScummVM tag or commit
         required: true
-        default: v2026.3.0
+        default: v2026.4.0
 
 permissions:
   contents: read
@@ -22,11 +22,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCUMMVM_REF: ${{ inputs.scummvm_ref || 'v2026.3.0' }}
+  SCUMMVM_REF: ${{ inputs.scummvm_ref || 'v2026.4.0' }}
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
-  WEBOS_PACKAGE_VERSION: 2026.3.0
-  WEBOS_BUILD_SUFFIX: webos1.1.1
+  WEBOS_PACKAGE_VERSION: 2026.4.0
+  WEBOS_BUILD_SUFFIX: webos1.2.1
 
 jobs:
   build:
@@ -173,7 +173,7 @@ jobs:
             --arg type "native" \
             --arg title "ScummVM" \
             --arg appDescription "Classic adventure game engine" \
-            --arg iconUri "https://raw.githubusercontent.com/scummvm/scummvm/v2026.3.0/dists/emscripten/assets/scummvm-192.png" \
+            --arg iconUri "https://raw.githubusercontent.com/scummvm/scummvm/v2026.4.0/dists/emscripten/assets/scummvm-192.png" \
             --arg sourceUrl "https://github.com/$GITHUB_REPOSITORY" \
             --arg ipkUrl "$ipk_name" \
             --arg sha256 "$ipk_hash" \
