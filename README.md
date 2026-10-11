@@ -12,8 +12,8 @@ produces an installable ARM `.ipk`.
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- webOS release: `scummvm_2026.3.0_webos_1.2.0`
-- ScummVM core: `v2026.3.0`
+- webOS release: `scummvm_2026.4.0_webos_1.2.1`
+- ScummVM core: `v2026.4.0`
 - OpenGL ES 2 renderer enabled
 
 The application can be installed and used through LG Developer Mode. Root is

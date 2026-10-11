@@ -83,7 +83,6 @@ engines=(
   lure
   made
   mads
-  madsv2
   mohawk
   myst
   riven
@@ -211,7 +210,7 @@ required_engine_descriptions=(
   "Dreamweb"
   "Hugo Trilogy"
   "MADE"
-  "MADS [all games]"
+  "MADS"
   "Parallaction"
   "Tony Tough and the Night of Roasted Moths"
   "Toonstruck"
