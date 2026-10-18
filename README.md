@@ -8,11 +8,12 @@ produces an installable ARM `.ipk`.
 
 ## Current target
 
-- LG webOS TV 6.x
+- LG webOS TV 6.x (webOS 1 compatibility proposed in PR #11)
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- webOS release: `scummvm_2026.3.0_webos_1.2.0`
+- latest published webOS release: `scummvm_2026.3.0_webos_1.2.0`
+- next planned package version: `2026.3.1` (webOS packaging revision; upstream ScummVM remains `v2026.3.0`)
 - ScummVM core: `v2026.3.0`
 - OpenGL ES 2 renderer enabled
 
@@ -186,6 +187,18 @@ bash scripts/package-webos.sh
 
 The codec build directory can be reused until the toolchain or
 `scripts/build-codecs.sh` changes.
+
+## Homebrew Channel publication
+
+The official store listing is staged in [homebrew/org.scummvm.scummvm.yml](homebrew/org.scummvm.scummvm.yml).
+After merging the webOS 1 compatibility changes in PR #11 and this release preparation:
+
+1. Run the GitHub Actions build and verify the resulting IPK on actual TVs.
+2. Create a tag matching `scummvm_2026.3.0_webos_1.3.0`. GitHub Actions builds and publishes the IPK, SHA-256 checksum, and manifest. Confirm the published version, package integrity, and artifact links.
+3. Submit `homebrew/org.scummvm.scummvm.yml` as `packages/org.scummvm.scummvm.yml` in [webosbrew/apps-repo](https://github.com/webosbrew/apps-repo). Disclose AI-assisted contributions as required by its rules, and include a real-device screenshot when available.
+4. The listing points to `releases/latest/download/org.scummvm.scummvm.manifest.json`, so future releases can be discovered without changing the catalog YAML.
+
+The app is not bundled with game files. The upstream engine is GPL-3.0-or-later; the packaging code is MIT-licensed.
 
 ## Project status
 
