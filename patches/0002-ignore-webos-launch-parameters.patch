@@ -9,9 +9,9 @@ index 7f0ed5c..92ab719 100644
 +
 +		// LG webOS passes native lifecycle information as a JSON argument.
 +		// SDL consumes it during startup, but ScummVM must not interpret it as
-+		// a game target.
-+		if (s[0] == '{' && strstr(s, "\"@system_native_app\":") &&
-+		    strstr(s, "\"nid\":"))
++		// a game target. Targets never start with '{', and the init library
++		// has already turned a {"target":...} argument into a plain target.
++		if (s[0] == '{')
 +			continue;
  
  		if (s[0] != '-') {
