@@ -8,11 +8,12 @@ produces an installable ARM `.ipk`.
 
 ## Current target
 
-- LG webOS TV 6.x
+- LG webOS TV 6.x (webOS 1 compatibility proposed in PR #11)
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- webOS release: `scummvm_2026.3.0_webos_1.2.0`
+- latest published webOS release: `scummvm_2026.3.0_webos_1.2.0`
+- next planned webOS port/package version: `1.3.0` (independent of upstream ScummVM `v2026.3.0`)
 - ScummVM core: `v2026.3.0`
 - OpenGL ES 2 renderer enabled
 
@@ -35,7 +36,7 @@ The SCUMM engine explicitly includes its v7/v8 subengine for Full Throttle,
 The Dig, and The Curse of Monkey Island. CI fails the build if that subengine
 is not present.
 
-The webOS 1.2.x Adventure Plus profile also contains `cine`, `cruise`,
+The Adventure Plus profile also contains `cine`, `cruise`,
 `dreamweb`, `groovie`, `hugo`, `made`, `mads`, `mohawk`,
 `parallaction`, `tony`, `toon`, `tucker`, `bladerunner`,
 `director`, `twp`, and `zvision`.
@@ -187,6 +188,20 @@ bash scripts/package-webos.sh
 
 The codec build directory can be reused until the toolchain or
 `scripts/build-codecs.sh` changes.
+
+## Homebrew Channel publication
+
+**Versioning:** The ScummVM engine version and the webOS port version are independent. For this release, ScummVM remains `v2026.3.0` and the webOS port becomes `1.3.0` (`appinfo.json` and Homebrew manifest). The IPK is named `org.scummvm.scummvm_1.3.0_arm.ipk`. Older published packages used `2026.3.0` as the app version; existing installations may require uninstall/reinstall instead of an in-place upgrade because `1.3.0` is numerically lower. Keep the same app ID and back up settings/savegames before reinstalling.
+
+The official store listing is staged in [homebrew/org.scummvm.scummvm.yml](homebrew/org.scummvm.scummvm.yml).
+After merging the webOS 1 compatibility changes in PR #11 and this release preparation:
+
+1. Run the GitHub Actions build and verify the resulting IPK on actual TVs.
+2. Create a tag matching `scummvm_2026.3.0_webos_1.3.0`. GitHub Actions builds and publishes the IPK, SHA-256 checksum, and manifest. Confirm the published version, package integrity, and artifact links.
+3. Submit `homebrew/org.scummvm.scummvm.yml` as `packages/org.scummvm.scummvm.yml` in [webosbrew/apps-repo](https://github.com/webosbrew/apps-repo). Disclose AI-assisted contributions as required by its rules, and include a real-device screenshot when available.
+4. The listing points to `releases/latest/download/org.scummvm.scummvm.manifest.json`, so future releases can be discovered without changing the catalog YAML.
+
+The app is not bundled with game files. The upstream engine is GPL-3.0-or-later; the packaging code is MIT-licensed.
 
 ## Project status
 
