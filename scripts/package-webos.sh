@@ -17,6 +17,11 @@ if [[ -z "${STAGING_DIR:-}" ]]; then
   exit 1
 fi
 
+if ! command -v patchelf >/dev/null 2>&1; then
+  echo "patchelf is required." >&2
+  exit 1
+fi
+
 if ! command -v ares-package >/dev/null 2>&1; then
   echo "ares-package is required." >&2
   exit 1
@@ -36,11 +41,15 @@ fi
 rm -rf "$dist_dir"
 mkdir -p "$package_dir/lib"
 
+# webOS 1 grants the Luna role only to the appinfo "main" executable, so
+# scummvm.bin must be that process. Its startup setup runs from a library
+# constructor instead of a separate launcher.
 install -m 0755 "$build_dir/scummvm" "$package_dir/scummvm.bin"
 "${CC:-arm-webos-linux-gnueabi-gcc}" \
-  -Os -s \
-  "$repo_root/packaging/launch-scummvm.c" \
-  -o "$package_dir/scummvm"
+  -Os -s -shared -fPIC \
+  "$repo_root/packaging/scummvm-webos-init.c" \
+  -o "$package_dir/lib/libscummvm-webos-init.so" -ldl
+patchelf --add-needed libscummvm-webos-init.so "$package_dir/scummvm.bin"
 sed "s/@VERSION@/$version/g" \
   "$repo_root/packaging/appinfo.json.in" > "$package_dir/appinfo.json"
 install -m 0644 \

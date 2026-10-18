@@ -24,7 +24,7 @@ concurrency:
 env:
   SCUMMVM_REF: ${{ inputs.scummvm_ref || 'v2026.3.0' }}
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
-  SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
+  SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.32.10-webos.1/SDL2-2.32.10-webos-abi.tar.gz
   WEBOS_PACKAGE_VERSION: 1.3.0
 
 jobs:
@@ -81,6 +81,7 @@ jobs:
             libogg-dev \
             libtheora-dev \
             libtool \
+            patchelf \
             pkg-config \
             xz-utils \
             "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
@@ -138,7 +139,9 @@ jobs:
       - name: Inspect package
         run: |
           ls -lh dist/*.ipk dist/*.sha256
-          file dist/package/scummvm dist/package/scummvm.bin dist/package/lib/*
+          file dist/package/scummvm.bin dist/package/lib/*
+          readelf -d dist/package/scummvm.bin | grep -F '[libscummvm-webos-init.so]'
+          jq -e '.main == "scummvm.bin"' dist/package/appinfo.json
           test -s dist/package/fonts.dat
           test -s dist/package/translations.dat
           test -s dist/package/scummremastered.zip

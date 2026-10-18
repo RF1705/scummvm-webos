@@ -4,7 +4,7 @@
   "vendor": "ScummVM Team / RF1705",
   "title": "ScummVM",
   "icon": "icon160.png",
-  "main": "scummvm",
+  "main": "scummvm.bin",
   "type": "native",
   "appDescription": "Classic adventure game engine",
   "iconColor": "#1b2138",
