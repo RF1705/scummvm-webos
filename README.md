@@ -166,7 +166,8 @@ be started directly from its original data files without any modification.
 
 CI is the supported build environment. For local builds, install the
 webOSbrew NDK, the autotools build dependencies, FFmpeg, QEMU user-mode
-emulation, and `ares-package`. Source the NDK's `environment-setup`, then run:
+emulation, `patchelf` and `ares-package`. Source the NDK's `environment-setup`,
+then run:
 
 ```sh
 export CODEC_PREFIX=/tmp/scummvm-webos-codecs

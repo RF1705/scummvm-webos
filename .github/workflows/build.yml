@@ -82,6 +82,7 @@ jobs:
             libogg-dev \
             libtheora-dev \
             libtool \
+            patchelf \
             pkg-config \
             xz-utils \
             "$RUNNER_TEMP"/downloads/ares-package_*_amd64.deb
@@ -139,7 +140,9 @@ jobs:
       - name: Inspect package
         run: |
           ls -lh dist/*.ipk dist/*.sha256
-          file dist/package/scummvm dist/package/scummvm.bin dist/package/lib/*
+          file dist/package/scummvm.bin dist/package/lib/*
+          readelf -d dist/package/scummvm.bin | grep -F '[libscummvm-webos-init.so]'
+          jq -e '.main == "scummvm.bin"' dist/package/appinfo.json
           test -s dist/package/fonts.dat
           test -s dist/package/translations.dat
           test -s dist/package/scummremastered.zip
