@@ -25,8 +25,8 @@ env:
   SCUMMVM_REF: ${{ inputs.scummvm_ref || 'v2026.3.0' }}
   SDK_ARCHIVE: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
   SDL2_ARCHIVE_URL: https://github.com/webosbrew/SDL-webOS/releases/download/release-2.30.12-webos.1/SDL2-2.30.12-webos-abi.tar.gz
-  WEBOS_PACKAGE_VERSION: 2026.3.0
-  WEBOS_BUILD_SUFFIX: webos1.1.1
+  WEBOS_PACKAGE_VERSION: 2026.3.1
+  WEBOS_BUILD_SUFFIX: webos1.3.0
 
 jobs:
   build:
@@ -190,6 +190,17 @@ jobs:
               ipkHash: {sha256: $sha256},
               ipkSize: $ipkSize
             }' > dist/org.scummvm.scummvm.manifest.json
+          jq -e --arg version "$WEBOS_PACKAGE_VERSION" '
+            .id == "org.scummvm.scummvm" and
+            .version == $version and
+            .type == "native" and
+            (.ipkUrl | endswith(".ipk")) and
+            (.ipkHash.sha256 | test("^[0-9a-f]{64}$")) and
+            (.ipkSize > 0)
+          ' dist/org.scummvm.scummvm.manifest.json
+          test "$(jq -r '.ipkUrl' dist/org.scummvm.scummvm.manifest.json)" = "$ipk_name"
+          test "$(jq -r '.ipkHash.sha256' dist/org.scummvm.scummvm.manifest.json)" = "$ipk_hash"
+          test "$(jq -r '.ipkSize' dist/org.scummvm.scummvm.manifest.json)" = "$ipk_size"
           jq . dist/org.scummvm.scummvm.manifest.json
 
       - name: Upload CI artifact
