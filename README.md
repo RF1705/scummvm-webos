@@ -61,7 +61,11 @@ AAC through libfaad remain disabled for now.
 ScummVM's native launcher on an LG webOS TV, showing the game library and
 Magic Remote pointer:
 
-![ScummVM main menu on LG webOS TV](docs/screenshots/scummvm-main.png)
+| ScummVM launcher | The Curse of Monkey Island |
+| --- | --- |
+| ![ScummVM launcher on LG webOS TV](docs/screenshots/scummvm-main.png) | ![The Curse of Monkey Island running on LG webOS](docs/screenshots/monkey-island.png) |
+| Thimbleweed Park | ScummVM settings |
+| ![Thimbleweed Park running on LG webOS](docs/screenshots/thimbleweed-park.png) | ![ScummVM settings on LG webOS](docs/screenshots/scummvm-settings.png) |
 
 Screenshots are captured from a real TV. The example game titles are user-supplied
 game data and are not included in the package.
