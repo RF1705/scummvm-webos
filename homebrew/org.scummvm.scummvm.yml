@@ -11,13 +11,12 @@ description: |
   you must provide your own legally obtained game data.
 
   Developer Mode installation supported; root is not required for ScummVM.
-
-  ## Screenshots
-
-  ![ScummVM main menu on LG webOS](https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/scummvm-main.png)
-
-  ![The Curse of Monkey Island running on LG webOS](https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/monkey-island.png)
-
-  ![Thimbleweed Park running on LG webOS](https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/thimbleweed-park.png)
-
-  ![ScummVM settings on LG webOS](https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/scummvm-settings.png)
+screenshots:
+  - url: https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/scummvm-main.png
+    caption: ScummVM
+  - url: https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/monkey-island.png
+    caption: The Curse of Monkey Island
+  - url: https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/thimbleweed-park.png
+    caption: Thimbleweed Park
+  - url: https://raw.githubusercontent.com/RF1705/scummvm-webos/main/docs/screenshots/scummvm-settings.png
+    caption: Settings
