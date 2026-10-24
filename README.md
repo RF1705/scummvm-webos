@@ -8,12 +8,12 @@ produces an installable ARM `.ipk`.
 
 ## Current target
 
-- LG webOS TV 6.x (webOS 1 compatibility proposed in PR #11)
+- LG webOS TV 1.x and 6.x (webOS 1 startup fixes merged in PR #11)
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- latest published webOS release: `scummvm_2026.3.0_webos_1.2.0`
-- next planned webOS port/package version: `1.3.0` (independent of upstream ScummVM `v2026.3.0`)
+- latest published webOS release: `scummvm_2026.3.0_webos_1.3.0`
+- webOS port/package version: `1.3.0` (independent of upstream ScummVM `v2026.3.0`)
 - ScummVM core: `v2026.3.0`
 - OpenGL ES 2 renderer enabled
 
@@ -55,6 +55,16 @@ webOS ARM soft-float ABI:
 Static linking keeps the package self-contained and avoids depending on codec
 libraries installed by a particular TV firmware. VP8/VP9 through libvpx and
 AAC through libfaad remain disabled for now.
+
+## Screenshots
+
+ScummVM's native launcher on an LG webOS TV, showing the game library and
+Magic Remote pointer:
+
+![ScummVM main menu on LG webOS TV](docs/screenshots/scummvm-main.png)
+
+Screenshots are captured from a real TV. The example game titles are user-supplied
+game data and are not included in the package.
 
 ## Graphics
 
