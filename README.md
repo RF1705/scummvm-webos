@@ -1,5 +1,18 @@
 # ScummVM for LG webOS TV
 
+[![Release](https://img.shields.io/github/v/release/RF1705/scummvm-webos?label=webOS%20release)](https://github.com/RF1705/scummvm-webos/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/RF1705/scummvm-webos/build.yml?branch=main&label=build)](https://github.com/RF1705/scummvm-webos/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/RF1705/scummvm-webos)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-LG%20webOS-8B1C23)
+
+![ScummVM running on LG webOS](docs/screenshots/scummvm-main.png)
+
+![The Curse of Monkey Island running on LG webOS](docs/screenshots/monkey-island.png)
+
+![Thimbleweed Park running on LG webOS](docs/screenshots/thimbleweed-park.png)
+
+![ScummVM settings on LG webOS](docs/screenshots/scummvm-settings.png)
+
 Reproducible, storage-conscious ScummVM packages for LG webOS TVs in Developer
 Mode. Root access is not required for ScummVM itself.
 The repository does not contain ScummVM itself or any game data. CI checks out
@@ -8,12 +21,12 @@ produces an installable ARM `.ipk`.
 
 ## Current target
 
-- LG webOS TV 6.x (webOS 1 compatibility proposed in PR #11)
+- LG webOS TV 1.x and 6.x (webOS 1 startup fixes merged in PR #11)
 - 32-bit ARMv7 (`arm`)
 - native SDL2 application
 - package ID: `org.scummvm.scummvm`
-- latest published webOS release: `scummvm_2026.3.0_webos_1.2.0`
-- next planned webOS port/package version: `1.3.0` (independent of upstream ScummVM `v2026.3.0`)
+- latest published webOS release: `scummvm_2026.3.0_webos_1.3.0`
+- webOS port/package version: `1.3.0` (independent of upstream ScummVM `v2026.3.0`)
 - ScummVM core: `v2026.3.0`
 - OpenGL ES 2 renderer enabled
 
