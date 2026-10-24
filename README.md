@@ -1,5 +1,18 @@
 # ScummVM for LG webOS TV
 
+[![Release](https://img.shields.io/github/v/release/RF1705/scummvm-webos?label=webOS%20release)](https://github.com/RF1705/scummvm-webos/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/RF1705/scummvm-webos/build.yml?branch=main&label=build)](https://github.com/RF1705/scummvm-webos/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/RF1705/scummvm-webos)](LICENSE)
+![Platform](https://img.shields.io/badge/platform-LG%20webOS-8B1C23)
+
+![ScummVM running on LG webOS](docs/screenshots/scummvm-main.png)
+
+![The Curse of Monkey Island running on LG webOS](docs/screenshots/monkey-island.png)
+
+![Thimbleweed Park running on LG webOS](docs/screenshots/thimbleweed-park.png)
+
+![ScummVM settings on LG webOS](docs/screenshots/scummvm-settings.png)
+
 Reproducible, storage-conscious ScummVM packages for LG webOS TVs in Developer
 Mode. Root access is not required for ScummVM itself.
 The repository does not contain ScummVM itself or any game data. CI checks out
@@ -55,14 +68,6 @@ webOS ARM soft-float ABI:
 Static linking keeps the package self-contained and avoids depending on codec
 libraries installed by a particular TV firmware. VP8/VP9 through libvpx and
 AAC through libfaad remain disabled for now.
-
-## Screenshots
-
-| ScummVM | The Curse of Monkey Island |
-| --- | --- |
-| ![ScummVM](docs/screenshots/scummvm-main.png) | ![The Curse of Monkey Island](docs/screenshots/monkey-island.png) |
-| Thimbleweed Park | Settings |
-| ![Thimbleweed Park](docs/screenshots/thimbleweed-park.png) | ![Settings](docs/screenshots/scummvm-settings.png) |
 
 ## Graphics
 
